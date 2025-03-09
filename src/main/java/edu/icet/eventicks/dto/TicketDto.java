@@ -1,5 +1,7 @@
 package edu.icet.eventicks.dto;
 
+import edu.icet.eventicks.util.TicketStatus;
+import edu.icet.eventicks.util.TicketType;
 import lombok.*;
 
 import java.time.LocalDateTime;
