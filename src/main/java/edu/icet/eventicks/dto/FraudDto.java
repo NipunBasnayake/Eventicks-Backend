@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class FraudDetectionDto {
+public class FraudDto {
     private Integer fraudId;
     private Integer userId;
     private Integer ticketId;
