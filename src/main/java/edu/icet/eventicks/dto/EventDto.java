@@ -1,5 +1,6 @@
 package edu.icet.eventicks.dto;
 
+import edu.icet.eventicks.util.EventCategory;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -16,7 +17,7 @@ public class EventDto {
     private LocalDateTime eventDate;
     private String venueName;
     private String venueLocation;
-    private String category;
+    private EventCategory category;
     private Integer createdBy;
     private Integer totalTickets;
     private LocalDateTime createdAt;
