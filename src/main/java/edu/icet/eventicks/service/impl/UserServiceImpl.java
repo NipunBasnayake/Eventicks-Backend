@@ -1,30 +1,50 @@
 package edu.icet.eventicks.service.impl;
 
+import edu.icet.eventicks.dto.LoginRequestDto;
 import edu.icet.eventicks.dto.UserDto;
+import edu.icet.eventicks.dto.UserRegistrationDto;
 import edu.icet.eventicks.service.UserService;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     @Override
-    public ResponseEntity<Boolean> addUser(UserDto userDto) {
+    public UserDto registerUser(UserRegistrationDto registrationDto) {
         return null;
     }
 
     @Override
-    public ResponseEntity<List<UserDto>> getAllUsers() {
+    public UserDto authenticateUser(LoginRequestDto loginRequestDto) {
         return null;
     }
 
     @Override
-    public ResponseEntity<Boolean> updateUser(UserDto userDto) {
+    public UserDto getUserById(Integer userId) {
         return null;
     }
 
     @Override
-    public ResponseEntity<Boolean> deleteUser(Long id) {
+    public List<UserDto> getAllUsers() {
+        return List.of();
+    }
+
+    @Override
+    public UserDto updateUser(Integer userId, UserDto userDto) {
         return null;
+    }
+
+    @Override
+    public void deleteUser(Integer userId) {
+
+    }
+
+    @Override
+    public void verifyEmail(String token) {
+
     }
 }

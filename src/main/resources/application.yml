@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/mosburgers
+    url: jdbc:mysql://localhost:3306/EvenTicks
     username: root
     password: 1234
 
