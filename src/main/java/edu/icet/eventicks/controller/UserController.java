@@ -20,10 +20,10 @@ public class UserController {
 
     final UserService userService;
 
-    @PostMapping()
+    @PostMapping("/register")
     public ResponseEntity<ApiResponseDto<UserDto>> registerUser(@RequestBody UserRegistrationDto registrationDto) {
         UserDto createdUser = userService.registerUser(registrationDto);
-        return new ResponseEntity<>(ApiResponseDto.success("User Successfully Registered",createdUser), HttpStatus.CREATED);
+        return new ResponseEntity<>(ApiResponseDto.success("User registered successfully", createdUser), HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
