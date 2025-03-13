@@ -1,6 +1,5 @@
 package edu.icet.eventicks.controller;
 
-import edu.icet.eventicks.dto.PaymentDto;
 import edu.icet.eventicks.dto.QrCodeDto;
 import edu.icet.eventicks.service.QrCodeService;
 import lombok.RequiredArgsConstructor;

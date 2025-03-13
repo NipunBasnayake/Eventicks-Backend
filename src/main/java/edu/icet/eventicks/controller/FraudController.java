@@ -1,7 +1,6 @@
 package edu.icet.eventicks.controller;
 
-import edu.icet.eventicks.dto.EventDto;
-import edu.icet.eventicks.dto.FraudDto;
+import edu.icet.eventicks.dto.FraudDetectionDto;
 import edu.icet.eventicks.service.FraudService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,18 +17,18 @@ public class FraudController {
     final FraudService fraudService;
 
     @PostMapping("/add")
-    public ResponseEntity<Boolean> addFraud (@RequestBody FraudDto fraudDto) {
-        return fraudService.addFraud(fraudDto);
+    public ResponseEntity<Boolean> addFraud (@RequestBody FraudDetectionDto fraudDetectionDto) {
+        return fraudService.addFraud(fraudDetectionDto);
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<FraudDto>> getAllFrauds() {
+    public ResponseEntity<List<FraudDetectionDto>> getAllFrauds() {
         return fraudService.getAllFrauds();
     }
 
     @PutMapping("/update")
-    public ResponseEntity<Boolean> updateFraud (@RequestBody FraudDto fraudDto) {
-        return fraudService.updateFraud(fraudDto);
+    public ResponseEntity<Boolean> updateFraud (@RequestBody FraudDetectionDto fraudDetectionDto) {
+        return fraudService.updateFraud(fraudDetectionDto);
     }
 
     @DeleteMapping("/delete/{id}")
