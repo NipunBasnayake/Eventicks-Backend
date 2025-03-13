@@ -1,17 +1,19 @@
 package edu.icet.eventicks.service;
 
 import edu.icet.eventicks.dto.PaymentDto;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 public interface PaymentService {
+    PaymentDto createPayment(PaymentDto paymentDto);
 
-    ResponseEntity<Boolean> addPayment(PaymentDto paymentDto);
+    PaymentDto getPaymentById(Integer paymentId);
 
-    ResponseEntity<List<PaymentDto>> getAllPayments();
+    List<PaymentDto> getPaymentsByBuyer(Integer buyerId);
 
-    ResponseEntity<Boolean> updatePayment(PaymentDto paymentDto);
+    List<PaymentDto> getPaymentsByTicket(Integer ticketId);
 
-    ResponseEntity<Boolean> deletePayment(Long id);
+    String processStripePayment(Integer ticketId, Integer buyerId, Integer quantity, String stripeToken);
+
+    PaymentDto confirmStripePayment(String paymentIntentId);
 }

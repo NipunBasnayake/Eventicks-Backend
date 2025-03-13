@@ -1,15 +1,16 @@
 package edu.icet.eventicks.dto;
 
-import edu.icet.eventicks.util.EventCategory;
-import lombok.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 
 import java.time.LocalDateTime;
 
-@Setter
-@Getter
-@AllArgsConstructor
+@Data
 @NoArgsConstructor
-@ToString
+@AllArgsConstructor
 public class EventDto {
     private Integer eventId;
     private String name;
@@ -17,8 +18,10 @@ public class EventDto {
     private LocalDateTime eventDate;
     private String venueName;
     private String venueLocation;
-    private EventCategory category;
-    private Integer createdBy;
+    private String category;
+    private Integer createdById;
+    private String createdByUsername;
     private Integer totalTickets;
     private LocalDateTime createdAt;
+    private Integer availableTickets;
 }

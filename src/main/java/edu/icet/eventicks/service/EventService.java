@@ -1,17 +1,25 @@
 package edu.icet.eventicks.service;
 
 import edu.icet.eventicks.dto.EventDto;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 public interface EventService {
+    EventDto createEvent(EventDto eventDto);
 
-    ResponseEntity<Boolean> addEvent(EventDto eventDto);
+    EventDto getEventById(Integer eventId);
 
-    ResponseEntity<List<EventDto>> getAllEvents();
+    List<EventDto> getFilteredEvents(String category, String venueLocation, String searchTerm);
 
-    ResponseEntity<Boolean> updateEvent(EventDto eventDto);
+    List<EventDto> getUpcomingEvents();
 
-    ResponseEntity<Boolean> deleteEvent(Long id);
+    EventDto updateEvent(Integer eventId, EventDto eventDto);
+
+    void deleteEvent(Integer eventId);
+
+    List<EventDto> getEventsByCreator(Integer userId);
+
+    List<String> getAllCategories();
+
+    List<String> getAllLocations();
 }

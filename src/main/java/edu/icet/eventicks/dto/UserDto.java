@@ -1,22 +1,20 @@
 package edu.icet.eventicks.dto;
 
-import edu.icet.eventicks.util.UserRole;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Setter
-@Getter
-@AllArgsConstructor
+@Data
 @NoArgsConstructor
-@ToString
+@AllArgsConstructor
 public class UserDto {
     private Integer userId;
     private String username;
     private String email;
-    private String password;
-    private UserRole role;
-    private boolean isEmailVerified;
+    private String role;
+    private Boolean isEmailVerified;
     private LocalDateTime lastLoginAt;
     private LocalDateTime registeredAt;
 }

@@ -1,21 +1,23 @@
 package edu.icet.eventicks.dto;
 
-import edu.icet.eventicks.util.PaymentMethod;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Setter
-@Getter
-@AllArgsConstructor
+@Data
 @NoArgsConstructor
-@ToString
+@AllArgsConstructor
 public class PaymentDto {
     private Integer paymentId;
     private Integer buyerId;
+    private String buyerUsername;
     private Integer ticketId;
+    private String eventName;
     private Integer quantity;
-    private Double totalAmount;
-    private PaymentMethod method;
+    private BigDecimal totalAmount;
+    private String method;
     private LocalDateTime paidAt;
 }

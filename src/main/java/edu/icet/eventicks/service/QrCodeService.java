@@ -1,17 +1,17 @@
 package edu.icet.eventicks.service;
 
 import edu.icet.eventicks.dto.QrCodeDto;
-import org.springframework.http.ResponseEntity;
-
-import java.util.List;
 
 public interface QrCodeService {
-    
-    ResponseEntity<Boolean> addQr(QrCodeDto qrCodeDto);
+    QrCodeDto generateQrCode(Integer ticketId);
 
-    ResponseEntity<List<QrCodeDto>> getAllQrCodes();
+    QrCodeDto getQrCodeById(Integer qrCodeId);
 
-    ResponseEntity<Boolean> updateQrCode(QrCodeDto qrCodeDto);
+    QrCodeDto getQrCodeByTicket(Integer ticketId);
 
-    ResponseEntity<Boolean> deleteQrCode(Long id);
+    QrCodeDto verifyQrCode(String qrValue);
+
+    QrCodeDto invalidateQrCode(Integer qrCodeId);
+
+    QrCodeDto scanQrCode(Integer qrCodeId);
 }

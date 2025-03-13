@@ -1,17 +1,23 @@
 package edu.icet.eventicks.service;
 
 import edu.icet.eventicks.dto.BidDto;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 public interface BidService {
+    BidDto placeBid(BidDto bidDto);
 
-    ResponseEntity<Boolean> addBid(BidDto bidDto);
+    BidDto getBidById(Integer bidId);
 
-    ResponseEntity<List<BidDto>> getAllbids();
+    List<BidDto> getBidsByUser(Integer userId);
 
-    ResponseEntity<Boolean> updateBid(BidDto bidDto);
+    List<BidDto> getBidsByTicket(Integer ticketId);
 
-    ResponseEntity<Boolean> deleteBid(Long id);
+    BidDto getHighestBidForTicket(Integer ticketId);
+
+    BidDto acceptBid(Integer bidId);
+
+    BidDto rejectBid(Integer bidId);
+
+    BidDto cancelBid(Integer bidId);
 }
