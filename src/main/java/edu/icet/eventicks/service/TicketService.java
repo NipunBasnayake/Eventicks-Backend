@@ -1,17 +1,23 @@
 package edu.icet.eventicks.service;
 
 import edu.icet.eventicks.dto.TicketDto;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 public interface TicketService {
-    
-    ResponseEntity<Boolean> addTicket(TicketDto ticketDto);
+    TicketDto createTicket(TicketDto ticketDto);
 
-    ResponseEntity<List<TicketDto>> getAllTickets();
+    TicketDto getTicketById(Integer ticketId);
 
-    ResponseEntity<Boolean> updateTicket(TicketDto ticketDto);
+    List<TicketDto> getFilteredTickets(String status, String type, Integer eventId);
 
-    ResponseEntity<Boolean> deleteTicket(Long id);
+    List<TicketDto> getTicketsByEvent(Integer eventId);
+
+    List<TicketDto> getTicketsBySeller(Integer sellerId);
+
+    TicketDto updateTicket(Integer ticketId, TicketDto ticketDto);
+
+    void deleteTicket(Integer ticketId);
+
+    TicketDto updateTicketStatus(Integer ticketId, String status);
 }

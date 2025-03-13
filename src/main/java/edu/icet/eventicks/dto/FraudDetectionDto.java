@@ -1,20 +1,21 @@
 package edu.icet.eventicks.dto;
 
-import edu.icet.eventicks.util.FraudStatus;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@AllArgsConstructor
+@Data
 @NoArgsConstructor
-@ToString
-public class FraudDto {
+@AllArgsConstructor
+public class FraudDetectionDto {
     private Integer fraudId;
     private Integer userId;
+    private String username;
     private Integer ticketId;
+    private String eventName;
     private String reason;
-    private FraudStatus status;
+    private String status;
     private LocalDateTime detectedAt;
 }

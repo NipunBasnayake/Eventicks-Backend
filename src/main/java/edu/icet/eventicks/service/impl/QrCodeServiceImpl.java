@@ -2,28 +2,39 @@ package edu.icet.eventicks.service.impl;
 
 import edu.icet.eventicks.dto.QrCodeDto;
 import edu.icet.eventicks.service.QrCodeService;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-import java.util.List;
-
+@Service
+@RequiredArgsConstructor
 public class QrCodeServiceImpl implements QrCodeService {
     @Override
-    public ResponseEntity<Boolean> addQr(QrCodeDto qrCodeDto) {
+    public QrCodeDto generateQrCode(Integer ticketId) {
         return null;
     }
 
     @Override
-    public ResponseEntity<List<QrCodeDto>> getAllQrCodes() {
+    public QrCodeDto getQrCodeById(Integer qrCodeId) {
         return null;
     }
 
     @Override
-    public ResponseEntity<Boolean> updateQrCode(QrCodeDto qrCodeDto) {
+    public QrCodeDto getQrCodeByTicket(Integer ticketId) {
         return null;
     }
 
     @Override
-    public ResponseEntity<Boolean> deleteQrCode(Long id) {
+    public QrCodeDto verifyQrCode(String qrValue) {
+        return null;
+    }
+
+    @Override
+    public QrCodeDto invalidateQrCode(Integer qrCodeId) {
+        return null;
+    }
+
+    @Override
+    public QrCodeDto scanQrCode(Integer qrCodeId) {
         return null;
     }
 }

@@ -1,38 +1,66 @@
 package edu.icet.eventicks.controller;
 
+import edu.icet.eventicks.dto.ApiResponseDto;
+import edu.icet.eventicks.dto.LoginRequestDto;
 import edu.icet.eventicks.dto.UserDto;
+import edu.icet.eventicks.dto.UserRegistrationDto;
 import edu.icet.eventicks.service.UserService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
-@CrossOrigin
 public class UserController {
-    
+
     final UserService userService;
 
-    @PostMapping("/add")
-    public ResponseEntity<Boolean> addUser (@RequestBody UserDto userDto) {
-        return userService.addUser(userDto);
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponseDto<UserDto>> registerUser(@RequestBody UserRegistrationDto registrationDto) {
+        UserDto createdUser = userService.registerUser(registrationDto);
+        return new ResponseEntity<>(ApiResponseDto.success("User registered successfully", createdUser), HttpStatus.CREATED);
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<List<UserDto>> getAllUsers() {
-        return userService.getAllUsers();
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponseDto<UserDto>> loginUser(@RequestBody LoginRequestDto loginRequestDto) {
+        UserDto authenticatedUser = userService.authenticateUser(loginRequestDto);
+        return ResponseEntity.ok(ApiResponseDto.success("Login successful", authenticatedUser));
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<Boolean> updateUser (@RequestBody UserDto userDto) {
-        return userService.updateUser(userDto);
+    @GetMapping("/{userId}")
+    public ResponseEntity<ApiResponseDto<UserDto>> getUserById(@PathVariable Integer userId) {
+        UserDto user = userService.getUserById(userId);
+        return ResponseEntity.ok(ApiResponseDto.success(user));
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Boolean> deleteUser (@PathVariable Long id) {
-        return userService.deleteUser(id);
+    @GetMapping
+    public ResponseEntity<ApiResponseDto<List<UserDto>>> getAllUsers() {
+        List<UserDto> users = userService.getAllUsers();
+        return ResponseEntity.ok(ApiResponseDto.success(users));
+    }
+
+    @PutMapping("/{userId}")
+    public ResponseEntity<ApiResponseDto<UserDto>> updateUser(
+            @PathVariable Integer userId,
+            @RequestBody UserDto userDto) {
+        UserDto updatedUser = userService.updateUser(userId, userDto);
+        return ResponseEntity.ok(ApiResponseDto.success("User updated successfully", updatedUser));
+    }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<ApiResponseDto<Void>> deleteUser(@PathVariable Integer userId) {
+        userService.deleteUser(userId);
+        return ResponseEntity.ok(ApiResponseDto.success("User deleted successfully", null));
+    }
+
+    @GetMapping("/verify-email/{token}")
+    public ResponseEntity<ApiResponseDto<Void>> verifyEmail(@PathVariable String token) {
+        userService.verifyEmail(token);
+        return ResponseEntity.ok(ApiResponseDto.success("Email verified successfully", null));
     }
 }

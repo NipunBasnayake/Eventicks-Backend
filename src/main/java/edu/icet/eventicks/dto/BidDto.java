@@ -1,21 +1,24 @@
 package edu.icet.eventicks.dto;
 
-import edu.icet.eventicks.util.BidStatus;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Setter
-@Getter
-@AllArgsConstructor
+@Data
 @NoArgsConstructor
-@ToString
+@AllArgsConstructor
 public class BidDto {
     private Integer bidId;
     private Integer ticketId;
+    private String eventName;
     private Integer userId;
-    private Double amount;
-    private BidStatus status;
+    private String username;
+    private BigDecimal amount;
+    private String status;
     private LocalDateTime placedAt;
     private LocalDateTime expiresAt;
+    private Boolean isHighestBid;
 }
