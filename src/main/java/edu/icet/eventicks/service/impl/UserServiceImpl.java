@@ -27,7 +27,6 @@ public class UserServiceImpl implements UserService {
         String hashedPassword = passwordEncoder.encode(registrationDto.getPassword());
 
         UserEntity userEntity = new UserEntity();
-        userEntity.setUserId(0);
         userEntity.setName(registrationDto.getName());
         userEntity.setEmail(registrationDto.getEmail());
         userEntity.setPasswordHash(hashedPassword);
