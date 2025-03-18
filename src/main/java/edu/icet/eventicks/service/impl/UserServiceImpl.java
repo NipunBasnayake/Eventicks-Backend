@@ -8,8 +8,8 @@ import edu.icet.eventicks.repository.UserRepository;
 import edu.icet.eventicks.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,42 +17,40 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
-    @Transactional
     public UserDto registerUser(UserRegistrationDto registrationDto) {
+        String hashedPassword = passwordEncoder.encode(registrationDto.getPassword());
 
-        if (userRepository.existsByEmail(registrationDto.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
-        }
-
-        UserEntity userEntity = new UserEntity( );
-        userEntity.setUsername(registrationDto.getUsername());
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUserId(0);
+        userEntity.setName(registrationDto.getName());
         userEntity.setEmail(registrationDto.getEmail());
-        userEntity.setPasswordHash(registrationDto.getPassword());
-        userEntity.setRole("USER"); // Default role
+        userEntity.setPasswordHash(hashedPassword);
+        userEntity.setRole("USER");
         userEntity.setIsEmailVerified(false);
+        userEntity.setLastLoginAt(null);
         userEntity.setRegisteredAt(LocalDateTime.now());
 
-        UserEntity savedUser = userRepository.save(userEntity);
-
-        // Generate and send verification email (simplified)
-        // emailService.sendVerificationEmail(savedUser.getEmail(), generateVerificationToken(savedUser));
-
-        return modelMapper.map(savedUser, UserDto.class);
+        return modelMapper.map(userRepository.save(userEntity), UserDto.class);
     }
 
     @Override
-    @Transactional
-    public UserDto authenticateUser(LoginRequestDto loginRequestDto) {
+    public UserDto login(LoginRequestDto loginRequestDto) {
+        UserEntity byEmail = userRepository.findByEmail(loginRequestDto.getEmail());
+        if (byEmail != null && passwordEncoder.matches(loginRequestDto.getPassword(), byEmail.getPasswordHash())) {
+            return modelMapper.map(byEmail, UserDto.class);
+        }
         return null;
     }
 
     @Override
     public UserDto getUserById(Integer userId) {
-       return null;
+        return null;
     }
 
     @Override
@@ -61,19 +59,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public UserDto updateUser(Integer userId, UserDto userDto) {
         return null;
     }
 
     @Override
-    @Transactional
-    public void deleteUser(Integer userId) {
+    public Boolean deleteUser(Integer userId) {
+        return false;
     }
 
     @Override
-    @Transactional
-    public void verifyEmail(String token) {
-
+    public Boolean verifyEmail(String token) {
+        return false;
     }
 }

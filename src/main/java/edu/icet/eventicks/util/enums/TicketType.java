@@ -1,4 +1,4 @@
-package edu.icet.eventicks.util;
+package edu.icet.eventicks.util.enums;
 
 public enum TicketType {
     REGULAR, VIP, PREMIUM
