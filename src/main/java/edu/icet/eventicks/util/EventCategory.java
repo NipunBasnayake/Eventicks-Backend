@@ -9,6 +9,13 @@ public enum EventCategory {
     NIGHTLIFE_SOCIAL("Clubbing, Social Mixers, Wine Tasting"),
     CHARITY_COMMUNITY("Fundraising, Blood Donation, Environmental Events");
 
-    EventCategory(String s) {
+    private final String description;
+
+    EventCategory(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
     }
 }
