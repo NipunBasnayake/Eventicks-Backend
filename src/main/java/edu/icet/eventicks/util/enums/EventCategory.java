@@ -1,4 +1,4 @@
-package edu.icet.eventicks.util;
+package edu.icet.eventicks.util.enums;
 
 public enum EventCategory {
     MUSIC_CONCERTS("Live Concerts, DJ Nights, Classical Music, Open Mic, Tribute Shows"),

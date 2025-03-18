@@ -10,7 +10,7 @@ public interface UserService {
 
     UserDto registerUser(UserRegistrationDto registrationDto);
 
-    UserDto authenticateUser(LoginRequestDto loginRequestDto);
+    UserDto login(LoginRequestDto loginRequestDto);
 
     UserDto getUserById(Integer userId);
 
@@ -18,7 +18,7 @@ public interface UserService {
 
     UserDto updateUser(Integer userId, UserDto userDto);
 
-    void deleteUser(Integer userId);
+    Boolean deleteUser(Integer userId);
 
-    void verifyEmail(String token);
+    Boolean verifyEmail(String token);
 }
