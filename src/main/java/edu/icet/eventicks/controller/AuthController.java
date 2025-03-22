@@ -9,14 +9,14 @@ import edu.icet.eventicks.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:4200")
 public class AuthController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
@@ -39,6 +39,68 @@ public class AuthController {
                     ApiResponseDto.error("Invalid credentials"),
                     HttpStatus.UNAUTHORIZED
             );
+        }
+    }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<ApiResponseDto<Boolean>> verifyEmail(@RequestParam String token) {
+        boolean verified = userService.verifyEmail(token);
+        return ResponseEntity.ok(ApiResponseDto.success("Email verified successfully", verified));
+    }
+
+    @PostMapping("/forgot")
+    public ResponseEntity<ApiResponseDto<Boolean>> forgotPassword(@RequestParam String email) {
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponseDto.error("Invalid email"));
+        }
+
+        Boolean emailSent = userService.sendOtpEmail(email);
+
+        if (Boolean.TRUE.equals(emailSent)) {
+            return ResponseEntity.ok(ApiResponseDto.success("OTP sent to your email", true));
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponseDto.error("Failed to send OTP"));
+        }
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<ApiResponseDto<Boolean>> verifyOtp(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String otp = request.get("otp");
+
+        if (email == null || email.isEmpty() || otp == null || otp.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponseDto.error("Email and OTP are required"));
+        }
+
+        Boolean isValid = userService.validateOtp(email, otp);
+
+        if (Boolean.TRUE.equals(isValid)) {
+            return ResponseEntity.ok(ApiResponseDto.success("OTP verified successfully", true));
+        } else {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponseDto.error("Invalid or expired OTP"));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponseDto<Boolean>> resetPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String newPassword = request.get("newPassword");
+
+        if (email == null || email.isEmpty() || newPassword == null || newPassword.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponseDto.error("Email and new password are required"));
+        }
+
+        Boolean isReset = userService.resetPassword(email, newPassword);
+
+        if (Boolean.TRUE.equals(isReset)) {
+            return ResponseEntity.ok(ApiResponseDto.success("Password reset successful", true));
+        } else {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponseDto.error("Failed to reset password"));
         }
     }
 }

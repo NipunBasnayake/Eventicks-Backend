@@ -17,7 +17,7 @@ public interface TicketService {
 
     TicketDto updateTicket(Integer ticketId, TicketDto ticketDto);
 
-    void deleteTicket(Integer ticketId);
+    Boolean deleteTicket(Integer ticketId);
 
     TicketDto updateTicketStatus(Integer ticketId, String status);
 }

@@ -13,12 +13,11 @@ import java.util.Date;
 @Slf4j
 @Component
 public class JwtUtil {
-    private final String secret = "EvEnTiCkSEvEnTiCkSEvEnTiCkSEvEnTiCkSEvEnTiCkSEvEnTiCkSEvEnTiCkS";
-    private final long expirationTime = 3600000;
 
     private final SecretKey signingKey;
 
     public JwtUtil() {
+        final String secret = "EvEnTiCkSEvEnTiCkSEvEnTiCkSEvEnTiCkSEvEnTiCkSEvEnTiCkSEvEnTiCkS";
         this.signingKey = Keys.hmacShaKeyFor(secret.getBytes());
         log.info("JwtUtil initialized with signing key");
     }
@@ -29,6 +28,7 @@ public class JwtUtil {
                 log.error("Cannot generate token for null or empty email");
                 return null;
             }
+            final long expirationTime = 3600000;
 
             log.info("Generating token for email: {}", email);
             Date now = new Date();
