@@ -65,4 +65,12 @@ public class TicketEntity {
             status = "AVAILABLE";
         }
     }
+
+    public Integer getEventId() {
+        return this.event.getEventId();
+    }
+
+    public void setEventId(EventEntity event) {
+        this.event = event;
+    }
 }

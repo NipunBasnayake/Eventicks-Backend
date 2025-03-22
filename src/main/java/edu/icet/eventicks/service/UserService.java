@@ -21,4 +21,10 @@ public interface UserService {
     Boolean deleteUser(Integer userId);
 
     Boolean verifyEmail(String token);
+
+    Boolean sendOtpEmail(String email);
+
+    Boolean validateOtp(String email, String otp);
+
+    Boolean resetPassword(String email, String newPassword);
 }
