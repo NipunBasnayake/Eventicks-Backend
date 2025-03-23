@@ -1,25 +1,24 @@
 package edu.icet.eventicks.service.impl;
 
 import edu.icet.eventicks.dto.LoginRequestDto;
+import edu.icet.eventicks.dto.OtpData;
 import edu.icet.eventicks.dto.UserDto;
 import edu.icet.eventicks.dto.UserRegistrationDto;
 import edu.icet.eventicks.entity.UserEntity;
 import edu.icet.eventicks.repository.UserRepository;
-import edu.icet.eventicks.service.EmailService;
-import edu.icet.eventicks.service.OtpService;
 import edu.icet.eventicks.service.UserService;
+import edu.icet.eventicks.util.EmailUtil;
 import edu.icet.eventicks.util.JwtUtil;
+import edu.icet.eventicks.util.OtpUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -29,15 +28,14 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final EmailService emailService;
-    private final OtpService otpService;
-    private final JwtUtil jwtUtil;
+    private final OtpUtil otpUtil;
+    private final EmailUtil emailUtil;
 
+    private final Map<String, OtpData> otpStorage = new ConcurrentHashMap<>();
     private static final String USER_NOT_FOUND_MESSAGE = "User not found with ID: ";
     private static final String USER_ID_NULL_MESSAGE = "User ID cannot be null";
 
     @Override
-    @Transactional
     public UserDto registerUser(UserRegistrationDto registrationDto) {
         if (registrationDto == null || registrationDto.getEmail() == null || registrationDto.getPassword() == null) {
             throw new IllegalArgumentException("Registration data cannot be null");
@@ -58,16 +56,10 @@ public class UserServiceImpl implements UserService {
         userEntity.setLastLoginAt(null);
         userEntity.setRegisteredAt(LocalDateTime.now());
 
-        UserEntity savedUser = userRepository.save(userEntity);
-
-        // Send verification email (optionally enable this feature)
-        // sendVerificationEmail(savedUser);
-
-        return modelMapper.map(savedUser, UserDto.class);
+        return modelMapper.map(userRepository.save(userEntity), UserDto.class);
     }
 
     @Override
-    @Transactional
     public UserDto login(LoginRequestDto loginRequestDto) {
         if (loginRequestDto == null || loginRequestDto.getEmail() == null || loginRequestDto.getPassword() == null) {
             throw new IllegalArgumentException("Login credentials cannot be null");
@@ -104,7 +96,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public UserDto updateUser(Integer userId, UserDto userDto) {
         if (userId == null) {
             throw new IllegalArgumentException(USER_ID_NULL_MESSAGE);
@@ -132,7 +123,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public Boolean deleteUser(Integer userId) {
         if (userId == null) {
             throw new IllegalArgumentException(USER_ID_NULL_MESSAGE);
@@ -147,23 +137,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public Boolean verifyEmail(String token) {
         if (token == null || token.isEmpty()) {
-            log.error("Email verification failed: Token is null or empty");
             return false;
         }
 
         try {
+            JwtUtil jwtUtil = new JwtUtil();
             String email = jwtUtil.extractEmail(token);
             if (email == null) {
-                log.error("Email verification failed: Could not extract email from token");
+                log.error("Failed to extract email from token");
                 return false;
             }
 
             UserEntity user = userRepository.findByEmail(email);
             if (user == null) {
-                log.error("Email verification failed: No user found with email: {}", email);
+                log.error("No user found with email: {}", email);
                 return false;
             }
 
@@ -178,130 +167,77 @@ public class UserServiceImpl implements UserService {
 
             return true;
         } catch (Exception e) {
-            log.error("Error verifying email with token: {}", e.getMessage(), e);
+            log.error("Error verifying email: {}", e.getMessage(), e);
             return false;
         }
     }
 
     @Override
     public Boolean sendOtpEmail(String email) {
-        try {
-            if (email == null || email.isBlank()) {
-                log.error("Cannot send OTP: Email is null or empty");
-                return false;
-            }
-
-            UserEntity user = userRepository.findByEmail(email);
-            if (user == null) {
-                log.error("Cannot send OTP: No user found with email: {}", email);
-                return false;
-            }
-
-            // Generate OTP using the OTP service
-            String otp = otpService.generateOtp(email);
-            log.info("Generated OTP for password reset for user: {}", email);
-
-            // Send OTP via email
-            boolean sent = emailService.sendOtpEmail(email, user.getName(), otp, 5);
-            if (!sent) {
-                log.error("Failed to send OTP email to: {}", email);
-                otpService.removeOtp(email);
-                return false;
-            }
-
-            return true;
-        } catch (Exception e) {
-            log.error("Error in sendOtpEmail: {}", e.getMessage(), e);
+        if (email == null || email.isEmpty()) {
             return false;
         }
+        UserEntity user = userRepository.findByEmail(email);
+        if (user == null) {
+            return false;
+        }
+        String otp = otpUtil.generateOtp();
+        LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(5);
+        otpStorage.put(email, new OtpData(otp, expiryTime));
+
+        return emailUtil.sendOtpEmailToPasswordReset(email, otp);
     }
 
     @Override
     public Boolean validateOtp(String email, String otp) {
-        try {
-            if (email == null || email.isBlank() || otp == null || otp.isBlank()) {
-                log.error("Invalid validateOtp parameters: email={}, otp={}", email, otp);
-                return false;
-            }
-
-            UserEntity user = userRepository.findByEmail(email);
-            if (user == null) {
-                log.error("OTP validation failed: No user found with email: {}", email);
-                return false;
-            }
-
-            // Validate OTP using the OTP service
-            return otpService.validateOtp(email, otp);
-        } catch (Exception e) {
-            log.error("Error validating OTP: {}", e.getMessage(), e);
+        if (email == null || email.isEmpty() || otp == null || otp.isEmpty()) {
             return false;
         }
+
+        OtpData otpData = otpStorage.get(email);
+
+        if (otpData == null) {
+            return false;
+        }
+
+        if (otpData.isExpired()) {
+            otpStorage.remove(email);
+            return false;
+        }
+        boolean equals = otpData.getOtp().equals(otp);
+        log.info("Validating otp: {}", equals);
+        return equals;
     }
 
     @Override
-    @Transactional
     public Boolean resetPassword(String email, String newPassword) {
+        if (email == null || email.isEmpty() || newPassword == null || newPassword.isEmpty()) {
+            log.error("Email or new password is null or empty");
+            return false;
+        }
+
+        // Verify that OTP was validated first
+        if (!otpStorage.containsKey(email)) {
+            log.error("OTP not validated for email: {}", email);
+            return false;
+        }
+
+        UserEntity user = userRepository.findByEmail(email);
+        if (user == null) {
+            log.error("No user found with email: {}", email);
+            return false;
+        }
+
         try {
-            if (email == null || email.isBlank() || newPassword == null || newPassword.isBlank()) {
-                log.error("Invalid resetPassword parameters: email={}, newPassword={}", email,
-                        newPassword != null ? "[PROVIDED]" : null);
-                return false;
-            }
-
-            UserEntity user = userRepository.findByEmail(email);
-            if (user == null) {
-                log.error("Password reset failed: No user found with email: {}", email);
-                return false;
-            }
-
-            // Check if OTP exists and is valid
-            if (!otpService.validateOtp(email, "CHECK_ONLY")) {
-                log.error("Password reset failed: No validated OTP found for email: {}", email);
-                return false;
-            }
-
-            // Validate new password
-            if (newPassword.length() < 8) {
-                log.error("Password reset failed: New password must be at least 8 characters long");
-                return false;
-            }
-
-            // Update password
             String hashedPassword = passwordEncoder.encode(newPassword);
             user.setPasswordHash(hashedPassword);
             userRepository.save(user);
-
-            // Remove OTP after successful password reset
-            otpService.removeOtp(email);
-
-            log.info("Password reset successful for user: {}", email);
+            otpStorage.remove(email);
             return true;
         } catch (Exception e) {
-            log.error("Error resetting password: {}", e.getMessage(), e);
             return false;
         }
     }
 
-    /**
-     * Sends an email verification link to a user
-     *
-     * @param user The user entity
-     * @return true if successful, false otherwise
-     */
-    public Boolean sendVerificationEmail(UserEntity user) {
-        try {
-            if (user == null || user.getEmail() == null) {
-                log.error("Cannot send verification email: User or email is null");
-                return false;
-            }
 
-            String token = jwtUtil.generateToken(user.getEmail());
-            String verificationLink = "http://localhost:4200/verify-email?token=" + token;
-
-            return emailService.sendEmailVerification(user.getEmail(), user.getName(), verificationLink);
-        } catch (Exception e) {
-            log.error("Error sending verification email: {}", e.getMessage(), e);
-            return false;
-        }
-    }
 }

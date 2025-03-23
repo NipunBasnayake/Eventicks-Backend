@@ -53,9 +53,7 @@ public class AuthController {
         if (email == null || email.isEmpty()) {
             return ResponseEntity.badRequest().body(ApiResponseDto.error("Invalid email"));
         }
-
         Boolean emailSent = userService.sendOtpEmail(email);
-
         if (Boolean.TRUE.equals(emailSent)) {
             return ResponseEntity.ok(ApiResponseDto.success("OTP sent to your email", true));
         } else {
@@ -86,6 +84,8 @@ public class AuthController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<ApiResponseDto<Boolean>> resetPassword(@RequestBody Map<String, String> request) {
+        System.out.println(request.toString());
+
         String email = request.get("email");
         String newPassword = request.get("newPassword");
 
