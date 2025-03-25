@@ -13,7 +13,8 @@ import java.util.Properties;
 public class EmailUtil {
 
     private final String host = "smtp.gmail.com";
-
+    private final String user = "eventicks@gmail.com";
+    private final String password = "xxxxx";
 
     public boolean sendOtpEmailToPasswordReset(String recipientEmail, String otp) {
         Properties properties = new Properties();

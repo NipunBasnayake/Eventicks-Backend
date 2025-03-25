@@ -9,6 +9,7 @@ import edu.icet.eventicks.service.TicketService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,9 +19,16 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class TicketServiceImpl implements TicketService {
+    private final TicketRepository ticketRepository;
+    private final ModelMapper modelMapper;
+
     @Override
     public TicketDto createTicket(TicketDto ticketDto) {
-        return null;
+        if (ticketDto == null || !ticketRepository.existsById(ticketDto.getTicketId())) {
+            return null;
+        }
+        TicketEntity ticketEntity = ticketRepository.save(modelMapper.map(ticketDto, TicketEntity.class));
+        return modelMapper.map(ticketEntity, TicketDto.class);
     }
 
     @Override
