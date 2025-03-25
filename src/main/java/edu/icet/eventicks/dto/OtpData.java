@@ -5,11 +5,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-@Getter
-@ToString
+import java.time.LocalDateTime;
+
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@ToString
 public class OtpData {
     private String otp;
-    private long expiryTime;
+    private LocalDateTime expiryTime;
+
+    public boolean isExpired() {
+        return LocalDateTime.now().isAfter(expiryTime);
+    }
 }
