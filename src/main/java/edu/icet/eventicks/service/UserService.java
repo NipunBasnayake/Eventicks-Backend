@@ -27,4 +27,6 @@ public interface UserService {
     Boolean validateOtp(String email, String otp);
 
     Boolean resetPassword(String email, String newPassword);
+
+    UserDto getUserByEmail(String email);
 }

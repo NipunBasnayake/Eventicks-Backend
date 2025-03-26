@@ -1,20 +1,16 @@
 package edu.icet.eventicks.controller;
-
 import edu.icet.eventicks.dto.ApiResponseDto;
 import edu.icet.eventicks.dto.UserDto;
 import edu.icet.eventicks.service.UserService;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
-
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:4200")
 public class UserController {
-
     private final UserService userService;
 
     @GetMapping("/{userId}")
@@ -27,6 +23,12 @@ public class UserController {
     public ResponseEntity<ApiResponseDto<List<UserDto>>> getAllUsers() {
         List<UserDto> users = userService.getAllUsers();
         return ResponseEntity.ok(ApiResponseDto.success(users));
+    }
+
+    @GetMapping("/email/{email}")
+    public ResponseEntity<ApiResponseDto<UserDto>> getUserByEmail(@PathVariable String email) {
+        UserDto user = userService.getUserByEmail(email);
+        return ResponseEntity.ok(ApiResponseDto.success(user));
     }
 
     @PutMapping("/{userId}")

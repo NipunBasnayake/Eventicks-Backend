@@ -100,12 +100,12 @@ public class UserServiceImpl implements UserService {
         if (userId == null) {
             throw new IllegalArgumentException(USER_ID_NULL_MESSAGE);
         }
-
         if (userDto == null) {
             throw new IllegalArgumentException("User data cannot be null");
         }
 
-        if (!userRepository.existsById(userId)) {
+        Optional<UserEntity> existingUserOpt = userRepository.findById(userId);
+        if (existingUserOpt.isEmpty()) {
             throw new IllegalArgumentException(USER_NOT_FOUND_MESSAGE + userId);
         }
 
@@ -113,13 +113,17 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Path variable ID doesn't match request body ID");
         }
 
-        userDto.setUserId(userId);
-        UserEntity userEntity = modelMapper.map(userDto, UserEntity.class);
         UserEntity byEmail = userRepository.findByEmail(userDto.getEmail());
-        userEntity.setPasswordHash(byEmail.getPasswordHash());
-        userEntity = userRepository.save(userEntity);
+        if (byEmail != null && !byEmail.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("Email already in use by another user");
+        }
 
-        return modelMapper.map(userEntity, UserDto.class);
+        UserEntity existingUser = existingUserOpt.get();
+        existingUser.setName(userDto.getName());
+        existingUser.setEmail(userDto.getEmail());
+
+        UserEntity savedEntity = userRepository.save(existingUser);
+        return modelMapper.map(savedEntity, UserDto.class);
     }
 
     @Override
@@ -216,7 +220,6 @@ public class UserServiceImpl implements UserService {
             return false;
         }
 
-        // Verify that OTP was validated first
         if (!otpStorage.containsKey(email)) {
             log.error("OTP not validated for email: {}", email);
             return false;
@@ -239,5 +242,17 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public UserDto getUserByEmail(String email) {
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
 
+        UserEntity user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found with email: " + email);
+        }
+
+        return modelMapper.map(user, UserDto.class);
+    }
 }
