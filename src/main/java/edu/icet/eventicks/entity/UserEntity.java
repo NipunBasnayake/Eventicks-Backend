@@ -31,7 +31,7 @@ public class UserEntity {
     private String email;
 
     @ToString.Exclude
-    @Column(name = "password_hash", length = 255)
+    @Column(name = "password_hash")
     private String passwordHash;
 
     @Column(name = "role", length = 50, nullable = false)

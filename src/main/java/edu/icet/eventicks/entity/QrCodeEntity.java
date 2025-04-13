@@ -23,7 +23,7 @@ public class QrCodeEntity {
     @JoinColumn(name = "ticket_id", nullable = false)
     private TicketEntity ticket;
 
-    @Column(name = "qr_value", length = 255, nullable = false)
+    @Column(name = "qr_value", nullable = false)
     private String qrValue;
 
     @Column(name = "is_valid")

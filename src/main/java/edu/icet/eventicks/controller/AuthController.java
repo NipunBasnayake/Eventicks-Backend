@@ -84,7 +84,6 @@ public class AuthController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<ApiResponseDto<Boolean>> resetPassword(@RequestBody Map<String, String> request) {
-        System.out.println(request.toString());
 
         String email = request.get("email");
         String newPassword = request.get("newPassword");
