@@ -227,7 +227,7 @@ public class UserServiceImpl implements UserService {
 
         UserEntity user = userRepository.findByEmail(email);
         if (user == null) {
-            log.error("No user found with email: {}", email);
+            log.error("No user found with email : {}", email);
             return false;
         }
 

@@ -27,7 +27,7 @@ public class FraudDetectionEntity {
     @JoinColumn(name = "ticket_id")
     private TicketEntity ticket;
 
-    @Column(name = "reason", length = 255)
+    @Column(name = "reason")
     private String reason;
 
     @Column(name = "status", length = 50)
