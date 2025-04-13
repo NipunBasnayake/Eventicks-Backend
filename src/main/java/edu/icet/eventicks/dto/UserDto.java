@@ -18,16 +18,4 @@ public class UserDto {
     private LocalDateTime lastLoginAt;
     private LocalDateTime registeredAt;
     private String token;
-
-    public UserDto(Integer userId, String name, String email, String role,
-                   Boolean isEmailVerified, LocalDateTime lastLoginAt,
-                   LocalDateTime registeredAt) {
-        this.userId = userId;
-        this.name = name;
-        this.email = email;
-        this.role = role;
-        this.isEmailVerified = isEmailVerified;
-        this.lastLoginAt = lastLoginAt;
-        this.registeredAt = registeredAt;
-    }
 }

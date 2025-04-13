@@ -1,20 +1,14 @@
 package edu.icet.eventicks.service.impl;
 
 import edu.icet.eventicks.dto.TicketDto;
-import edu.icet.eventicks.entity.EventEntity;
 import edu.icet.eventicks.entity.TicketEntity;
-import edu.icet.eventicks.repository.EventRepository;
 import edu.icet.eventicks.repository.TicketRepository;
 import edu.icet.eventicks.service.TicketService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.Model;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +52,7 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public Boolean deleteTicket(Integer ticketId) {
-        return null;
+        return false;
     }
 
     @Override
