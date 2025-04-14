@@ -2,28 +2,28 @@ package edu.icet.eventicks.service.impl;
 
 import edu.icet.eventicks.dto.EventDto;
 import edu.icet.eventicks.entity.EventEntity;
+import edu.icet.eventicks.entity.UserEntity;
 import edu.icet.eventicks.repository.EventRepository;
-import edu.icet.eventicks.repository.UserRepository;
 import edu.icet.eventicks.service.EventService;
+import edu.icet.eventicks.service.UserService;
 
-import java.time.LocalDate;
-import java.util.*;
-
-import edu.icet.eventicks.util.enums.EventCategory;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final ModelMapper modelMapper;
 
     @Override
     public EventDto createEvent(EventDto eventDto) {
-        if (eventDto == null || eventDto.getEventId() != null) {
+        if (eventDto == null || eventRepository.existsById(eventDto.getEventId())) {
             return null;
         }
         return modelMapper.map(eventRepository.save(modelMapper.map(eventDto, EventEntity.class)), EventDto.class);
@@ -34,56 +34,59 @@ public class EventServiceImpl implements EventService {
         if (eventId == null || !eventRepository.existsById(eventId)) {
             return null;
         }
-        return modelMapper.map(eventRepository.findById(eventId), EventDto.class);
+        Optional<EventEntity> eventEntity = eventRepository.findById(eventId);
+        return eventEntity.map(entity -> modelMapper.map(entity, EventDto.class)).orElse(null);
     }
 
     @Override
     public List<EventDto> getFilteredEvents(String category, String venueLocation, String searchTerm) {
-        if ((searchTerm == null || searchTerm.isEmpty()) &&
+        if ((category == null || category.isEmpty()) &&
                 (venueLocation == null || venueLocation.isEmpty()) &&
-                (category == null || category.isEmpty())) {
-            return Collections.emptyList();
+                (searchTerm == null || searchTerm.isEmpty())) {
+            return eventRepository.findAll().stream()
+                    .map(entity -> modelMapper.map(entity, EventDto.class))
+                    .toList();
         }
 
-        return eventRepository.findAll().stream()
-                .filter(eventEntity -> {
-                    boolean matchesCategory = category == null || category.isEmpty() ||
-                            (eventEntity.getCategory() != null && eventEntity.getCategory().equalsIgnoreCase(category));
+        List<EventEntity> allEvents = eventRepository.findAll();
+        List<EventDto> filteredEvents = new ArrayList<>();
 
-                    boolean matchesVenue = venueLocation == null || venueLocation.isEmpty() ||
-                            (eventEntity.getVenueLocation() != null && eventEntity.getVenueLocation().equalsIgnoreCase(venueLocation));
+        for (EventEntity entity : allEvents) {
+            boolean categoryMatch = category == null || category.isEmpty() || entity.getCategory().equals(category);
+            boolean locationMatch = venueLocation == null || venueLocation.isEmpty() || entity.getVenueLocation().equals(venueLocation);
+            boolean searchMatch = searchTerm == null || searchTerm.isEmpty() ||
+                    entity.getName().toLowerCase().contains(searchTerm.toLowerCase()) ||
+                    entity.getDescription().toLowerCase().contains(searchTerm.toLowerCase());
 
-                    boolean matchesSearchTerm = searchTerm == null || searchTerm.isEmpty() ||
-                            eventEntity.getName().toLowerCase().contains(searchTerm.toLowerCase()) ||
-                            (eventEntity.getDescription() != null && eventEntity.getDescription().toLowerCase().contains(searchTerm.toLowerCase()));
+            if (categoryMatch && locationMatch && searchMatch) {
+                filteredEvents.add(modelMapper.map(entity, EventDto.class));
+            }
+        }
 
-                    return matchesCategory && matchesVenue && matchesSearchTerm;
-                })
-                .map(eventEntity -> modelMapper.map(eventEntity, EventDto.class))
-                .toList();
+        return filteredEvents;
     }
 
     @Override
     public List<EventDto> getUpcomingEvents() {
-        LocalDate today = LocalDate.now();
-        LocalDate oneWeekFromNow = today.plusDays(7);
+        LocalDateTime now = LocalDateTime.now();
 
         return eventRepository.findAll().stream()
-                .filter(eventEntity -> {
-                    LocalDate eventDate = LocalDate.from(eventEntity.getEventDate());
-                    return eventDate.isEqual(today) || eventDate.isAfter(today) && eventDate.isBefore(oneWeekFromNow) || eventDate.isEqual(oneWeekFromNow);
-                })
-                .map(eventEntity -> modelMapper.map(eventEntity, EventDto.class))
+                .filter(event -> event.getEventDate().isAfter(now))
+                .sorted(Comparator.comparing(EventEntity::getEventDate))
+                .map(entity -> modelMapper.map(entity, EventDto.class))
                 .toList();
     }
 
     @Override
     public EventDto updateEvent(Integer eventId, EventDto eventDto) {
-        if (eventId == null || !eventRepository.existsById(eventId) && eventDto == null) {
+        if (eventId == null || eventDto == null || !eventRepository.existsById(eventId) || !eventId.equals(eventDto.getEventId())) {
             return null;
         }
-        eventDto.setEventId(eventId);
-        return modelMapper.map(eventRepository.save(modelMapper.map(eventDto, EventEntity.class)), EventDto.class);
+
+        EventEntity eventEntity = modelMapper.map(eventDto, EventEntity.class);
+        EventEntity updatedEntity = eventRepository.save(eventEntity);
+
+        return modelMapper.map(updatedEntity, EventDto.class);
     }
 
     @Override
@@ -97,18 +100,25 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventDto> getEventsByCreator(Integer userId) {
-        if (userId == null || !userRepository.existsById(userId)) {
+        if (userId == null) {
             return Collections.emptyList();
         }
-        return eventRepository.findByCreatedBy(userRepository.findById(userId)).stream()
-                .map(eventEntity -> modelMapper.map(eventEntity, EventDto.class))
+
+        UserEntity creator = modelMapper.map(userService.getUserById(userId), UserEntity.class);
+        if (creator == null) {
+            return Collections.emptyList();
+        }
+
+        return eventRepository.findByCreatedBy(creator).stream()
+                .map(entity -> modelMapper.map(entity, EventDto.class))
                 .toList();
     }
 
     @Override
     public List<String> getAllCategories() {
-        return Arrays.stream(EventCategory.values())
-                .map(EventCategory::name)
+        return eventRepository.findAll().stream()
+                .map(EventEntity::getCategory)
+                .distinct()
                 .toList();
     }
 
@@ -116,7 +126,6 @@ public class EventServiceImpl implements EventService {
     public List<String> getAllLocations() {
         return eventRepository.findAll().stream()
                 .map(EventEntity::getVenueLocation)
-                .filter(Objects::nonNull)
                 .distinct()
                 .toList();
     }

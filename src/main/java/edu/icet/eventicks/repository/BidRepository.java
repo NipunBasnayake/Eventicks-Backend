@@ -7,12 +7,9 @@ import edu.icet.eventicks.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;
-import java.util.List;
 
 public interface BidRepository extends JpaRepository<BidEntity, Integer> {
-    List<BidEntity> findByUser(UserEntity user);
+    Collection<Object> findByUser(UserEntity user);
 
-    List<BidEntity> findByTicket(TicketEntity ticket);
-
-    List<BidEntity> findByTicketOrderByBidAmountDesc(TicketEntity ticket);
+    Collection<Object> findByTicket(TicketEntity ticket);
 }

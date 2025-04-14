@@ -4,9 +4,8 @@ import edu.icet.eventicks.entity.EventEntity;
 import edu.icet.eventicks.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.Collection;
 
 public interface EventRepository extends JpaRepository<EventEntity, Integer> {
-    List<EventEntity> findByCreatedBy(Optional<UserEntity> createdBy);
+    Collection<Object> findByCreatedBy(UserEntity createdBy);
 }

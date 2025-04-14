@@ -1,17 +1,16 @@
 package edu.icet.eventicks.repository;
 
-import edu.icet.eventicks.dto.TicketDto;
+import edu.icet.eventicks.entity.EventEntity;
+
 import edu.icet.eventicks.entity.TicketEntity;
 import edu.icet.eventicks.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.Collection;
 
 public interface TicketRepository extends JpaRepository<TicketEntity, Integer> {
 
-    List<TicketEntity> findByEventId(Integer eventId);
+    Collection<Object> findByEvent(EventEntity event);
 
-
-    List<TicketDto> findBySeller(Optional<UserEntity> seller);
+    Collection<Object> findBySeller(UserEntity seller);
 }
