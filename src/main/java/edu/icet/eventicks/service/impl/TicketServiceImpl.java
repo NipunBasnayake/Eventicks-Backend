@@ -6,7 +6,6 @@ import edu.icet.eventicks.entity.EventEntity;
 import edu.icet.eventicks.entity.TicketEntity;
 import edu.icet.eventicks.entity.UserEntity;
 import edu.icet.eventicks.repository.TicketRepository;
-import edu.icet.eventicks.repository.UserRepository;
 import edu.icet.eventicks.service.EventService;
 import edu.icet.eventicks.service.TicketService;
 import edu.icet.eventicks.service.UserService;
@@ -18,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -79,7 +77,7 @@ public class TicketServiceImpl implements TicketService {
 
         return ticketRepository.findByEvent(modelMapper.map(eventService.getEventById(eventId), EventEntity.class)).stream()
                 .map(entity -> modelMapper.map(entity, TicketDto.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -95,7 +93,7 @@ public class TicketServiceImpl implements TicketService {
 
         return ticketRepository.findBySeller(modelMapper.map(seller, UserEntity.class)).stream()
                 .map(entity -> modelMapper.map(entity, TicketDto.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
