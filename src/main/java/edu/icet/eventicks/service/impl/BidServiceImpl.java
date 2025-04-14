@@ -10,6 +10,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class BidServiceImpl implements BidService {
+
     @Override
     public BidDto placeBid(BidDto bidDto) {
         return null;
