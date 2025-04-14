@@ -15,7 +15,7 @@ public interface EventService {
 
     EventDto updateEvent(Integer eventId, EventDto eventDto);
 
-    void deleteEvent(Integer eventId);
+    Boolean deleteEvent(Integer eventId);
 
     List<EventDto> getEventsByCreator(Integer userId);
 
