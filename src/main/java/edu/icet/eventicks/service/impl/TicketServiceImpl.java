@@ -9,6 +9,7 @@ import edu.icet.eventicks.repository.TicketRepository;
 import edu.icet.eventicks.service.EventService;
 import edu.icet.eventicks.service.TicketService;
 import edu.icet.eventicks.service.UserService;
+
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -101,7 +102,6 @@ public class TicketServiceImpl implements TicketService {
         if (ticketId == null || ticketDto == null || !ticketRepository.existsById(ticketId) || !ticketId.equals(ticketDto.getTicketId())) {
             return null;
         }
-
         TicketEntity ticketEntity = ticketRepository.save(modelMapper.map(ticketDto, TicketEntity.class));
         return modelMapper.map(ticketEntity, TicketDto.class);
     }
@@ -111,7 +111,6 @@ public class TicketServiceImpl implements TicketService {
         if (ticketId == null || !ticketRepository.existsById(ticketId)) {
             return false;
         }
-
         ticketRepository.deleteById(ticketId);
         return !ticketRepository.existsById(ticketId);
     }
@@ -121,7 +120,6 @@ public class TicketServiceImpl implements TicketService {
         if (ticketId == null || status == null || status.isEmpty() || !ticketRepository.existsById(ticketId)) {
             return null;
         }
-
         return ticketRepository.findById(ticketId)
                 .map(ticketEntity -> {
                     ticketEntity.setStatus(status);

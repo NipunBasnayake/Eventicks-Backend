@@ -6,6 +6,7 @@ import edu.icet.eventicks.entity.UserEntity;
 import edu.icet.eventicks.repository.EventRepository;
 import edu.icet.eventicks.service.EventService;
 import edu.icet.eventicks.service.UserService;
+
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -93,7 +94,6 @@ public class EventServiceImpl implements EventService {
         if (eventId == null || !eventRepository.existsById(eventId)) {
             return false;
         }
-
         eventRepository.deleteById(eventId);
         return !eventRepository.existsById(eventId);
     }

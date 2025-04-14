@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class BidServiceImpl implements BidService {
+
     private final BidRepository bidRepository;
     private final UserService userService;
     private final TicketService ticketService;

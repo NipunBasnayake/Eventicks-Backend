@@ -1,5 +1,6 @@
 package edu.icet.eventicks.repository;
 
+import edu.icet.eventicks.dto.BidDto;
 import edu.icet.eventicks.entity.BidEntity;
 import edu.icet.eventicks.entity.TicketEntity;
 import edu.icet.eventicks.entity.UserEntity;
