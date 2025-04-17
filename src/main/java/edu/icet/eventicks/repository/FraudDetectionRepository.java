@@ -14,4 +14,6 @@ public interface FraudDetectionRepository extends JpaRepository<FraudDetectionEn
     List<FraudDetectionEntity> findByUser(UserEntity user);
 
     List<FraudDetectionDto> findByTicket(TicketEntity ticket);
+
+    List<FraudDetectionEntity> findByUserUserId(Integer userId);
 }
