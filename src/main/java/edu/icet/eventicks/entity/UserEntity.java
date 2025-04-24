@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -45,25 +43,4 @@ public class UserEntity {
 
     @Column(name = "registered_at")
     private LocalDateTime registeredAt;
-
-    @ToString.Exclude
-    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<EventEntity> createdEvents = new HashSet<>();
-
-    @ToString.Exclude
-    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<TicketEntity> sellingTickets = new HashSet<>();
-
-    @ToString.Exclude
-    @OneToMany(mappedBy = "buyer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<PaymentEntity> payments = new HashSet<>();
-
-    @ToString.Exclude
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<BidEntity> bids = new HashSet<>();
-
-    @ToString.Exclude
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<FraudDetectionEntity> fraudDetections = new HashSet<>();
-
 }

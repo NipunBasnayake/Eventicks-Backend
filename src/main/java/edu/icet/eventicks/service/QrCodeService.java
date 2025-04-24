@@ -9,9 +9,9 @@ public interface QrCodeService {
 
     QrCodeDto getQrCodeByTicket(Integer ticketId);
 
-    QrCodeDto verifyQrCode(String qrValue);
+    QrCodeDto verifyQrCode(Integer ticketId);
 
     QrCodeDto invalidateQrCode(Integer qrCodeId);
 
-    QrCodeDto scanQrCode(Integer qrCodeId);
+    Object countQrCodes();
 }

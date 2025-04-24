@@ -20,4 +20,8 @@ public interface FraudDetectionService {
     Boolean analyzeTicketForFraud(Integer ticketId);
 
     Boolean analyzeUserForFraud(Integer userId);
+
+    Object countFraudCases();
+
+    Object countFraudCasesByEvent(Integer eventId);
 }

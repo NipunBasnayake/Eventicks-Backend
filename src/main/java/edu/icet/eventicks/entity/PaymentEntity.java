@@ -20,28 +20,30 @@ public class PaymentEntity {
     @Column(name = "payment_id")
     private Integer paymentId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "buyer_id", nullable = false)
-    private UserEntity buyer;
+    @Column(name = "buyer_id")
+    private Integer buyerId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ticket_id", nullable = false)
-    private TicketEntity ticket;
+    @Column(name = "buyer_username")
+    private String buyerUsername;
 
-    @Column(name = "quantity", nullable = false)
+    @Column(name = "ticket_id")
+    private Integer ticketId;
+
+    @Column(name = "event_id")
+    private Integer eventId;
+
+    @Column(name = "event_name")
+    private String eventName;
+
+    @Column(name = "quantity")
     private Integer quantity;
 
-    @Column(name = "total_amount", precision = 10, scale = 2, nullable = false)
+    @Column(name = "total_amount", precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
-    @Column(name = "method", length = 50)
+    @Column(name = "method")
     private String method;
 
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
-
-    @PrePersist
-    protected void onCreate() {
-        paidAt = LocalDateTime.now();
-    }
 }

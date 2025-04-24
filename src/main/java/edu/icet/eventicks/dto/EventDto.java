@@ -18,7 +18,6 @@ public class EventDto {
     private String venueLocation;
     private String category;
     private Integer createdById;
-    private String createdByUsername;
     private Integer totalTickets;
     private LocalDateTime createdAt;
     private Integer availableTickets;

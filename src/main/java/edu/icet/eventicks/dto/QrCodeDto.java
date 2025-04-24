@@ -18,4 +18,5 @@ public class QrCodeDto {
     private LocalDateTime scannedAt;
     private LocalDateTime expiresAt;
     private LocalDateTime generatedAt;
+    private String imageUrl;
 }

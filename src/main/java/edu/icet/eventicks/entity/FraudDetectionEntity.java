@@ -19,15 +19,22 @@ public class FraudDetectionEntity {
     @Column(name = "fraud_id")
     private Integer fraudId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    @Column(name = "user_id")
+    private Integer userId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ticket_id")
-    private TicketEntity ticket;
+    @Column(name = "username", length = 200)
+    private String username;
 
-    @Column(name = "reason")
+    @Column(name = "ticket_id")
+    private Integer ticketId;
+
+    @Column(name = "event_id")
+    private Integer eventId;
+
+    @Column(name = "event_name", length = 200)
+    private String eventName;
+
+    @Column(name = "reason", columnDefinition = "TEXT")
     private String reason;
 
     @Column(name = "status", length = 50)
@@ -35,12 +42,4 @@ public class FraudDetectionEntity {
 
     @Column(name = "detected_at")
     private LocalDateTime detectedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        detectedAt = LocalDateTime.now();
-        if (status == null) {
-            status = "PENDING_REVIEW";
-        }
-    }
 }

@@ -22,4 +22,6 @@ public interface EventService {
     List<String> getAllCategories();
 
     List<String> getAllLocations();
+
+    Object countEvents();
 }

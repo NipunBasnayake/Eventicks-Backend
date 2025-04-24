@@ -29,4 +29,6 @@ public interface UserService {
     Boolean resetPassword(String email, String newPassword);
 
     UserDto getUserByEmail(String email);
+
+    Object countUsers();
 }

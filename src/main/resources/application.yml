@@ -11,3 +11,8 @@ spring:
   output:
     ansi:
       enabled: always
+
+qr:
+  code:
+    image:
+      directory: E:\Projects\Eventicks - Angular Springboot\QR Codes

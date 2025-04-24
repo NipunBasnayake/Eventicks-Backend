@@ -9,11 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface FraudDetectionRepository extends JpaRepository<FraudDetectionEntity, Integer> {
-    List<FraudDetectionEntity> findByStatus(String status);
 
-    List<FraudDetectionEntity> findByUser(UserEntity user);
-
-    List<FraudDetectionDto> findByTicket(TicketEntity ticket);
-
-    List<FraudDetectionEntity> findByUserUserId(Integer userId);
 }
