@@ -84,4 +84,16 @@ public class FraudDetectionServiceImpl implements FraudDetectionService {
     public Boolean analyzeUserForFraud(Integer userId) {
         return userId % 2 == 0;
     }
+
+    @Override
+    public Object countFraudCases() {
+        return frdRepo.count();
+    }
+
+    @Override
+    public Object countFraudCasesByEvent(Integer eventId) {
+        return frdRepo.findAll().stream()
+                .filter(t -> t.getEventId().equals(eventId))
+                .count();
+    }
 }

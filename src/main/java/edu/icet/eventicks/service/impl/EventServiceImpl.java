@@ -105,4 +105,9 @@ public class EventServiceImpl implements EventService {
                 .distinct()
                 .toList();
     }
+
+    @Override
+    public Object countEvents() {
+        return eventRepository.count();
+    }
 }

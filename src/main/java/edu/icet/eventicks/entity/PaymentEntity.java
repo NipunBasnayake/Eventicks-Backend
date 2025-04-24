@@ -29,6 +29,9 @@ public class PaymentEntity {
     @Column(name = "ticket_id")
     private Integer ticketId;
 
+    @Column(name = "event_id")
+    private Integer eventId;
+
     @Column(name = "event_name")
     private String eventName;
 

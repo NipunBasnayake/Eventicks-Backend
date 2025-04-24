@@ -72,4 +72,16 @@ public class PaymentServiceImpl implements PaymentService {
 
         return paymentDto;
     }
+
+    @Override
+    public Object countPayments() {
+        return paymentRepository.count();
+    }
+
+    @Override
+    public Object countPaymentsByEvent(Integer eventId) {
+        return paymentRepository.findAll().stream()
+                .filter(t -> t.getEventId().equals(eventId))
+                .count();
+    }
 }

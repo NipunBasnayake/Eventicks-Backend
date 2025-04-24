@@ -23,7 +23,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -109,26 +111,44 @@ public class QrCodeServiceImpl implements QrCodeService {
 
     @Override
     public QrCodeDto getQrCodeById(Integer qrCodeId) {
-        return null;
+        Optional<QrCodeEntity> optionalQr = qrCodeRepository.findById(qrCodeId);
+        return optionalQr.map(entity -> modelMapper.map(entity, QrCodeDto.class)).orElse(null);
     }
 
     @Override
     public QrCodeDto getQrCodeByTicket(Integer ticketId) {
-        return null;
+        if (!qrCodeRepository.existsById(ticketId)) {
+            return null;
+        }
+        QrCodeEntity byTicketId = qrCodeRepository.findByTicketId(ticketId);
+        return modelMapper.map(byTicketId, QrCodeDto.class);
     }
 
     @Override
-    public QrCodeDto verifyQrCode(String qrValue) {
+    public QrCodeDto verifyQrCode(Integer ticketId) {
+        if (ticketId == null) {
+            return null;
+        }
+        QrCodeEntity byTicketId = qrCodeRepository.findByTicketId(ticketId);
+        if (Boolean.TRUE.equals(byTicketId.getIsValid())){
+            return modelMapper.map(byTicketId, QrCodeDto.class);
+        }
         return null;
     }
 
     @Override
     public QrCodeDto invalidateQrCode(Integer qrCodeId) {
-        return null;
+        return qrCodeRepository.findById(qrCodeId)
+                .map(qrCodeEntity -> {
+                    qrCodeEntity.setIsValid(Boolean.FALSE);
+                    QrCodeEntity savedEntity = qrCodeRepository.save(qrCodeEntity);
+                    return modelMapper.map(savedEntity, QrCodeDto.class);
+                })
+                .orElseThrow(() -> new RuntimeException("QR Code not found with ID: " + qrCodeId));
     }
 
     @Override
-    public QrCodeDto scanQrCode(Integer qrCodeId) {
-        return null;
+    public Object countQrCodes() {
+        return qrCodeRepository.count();
     }
 }

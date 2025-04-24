@@ -15,6 +15,7 @@ public class PaymentDto {
     private Integer buyerId;
     private String buyerUsername;
     private Integer ticketId;
+    private Integer eventId;
     private String eventName;
     private Integer quantity;
     private BigDecimal totalAmount;

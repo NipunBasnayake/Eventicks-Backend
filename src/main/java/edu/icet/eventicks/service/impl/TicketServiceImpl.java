@@ -45,7 +45,7 @@ public class TicketServiceImpl implements TicketService {
                 .filter(t -> type == null || t.getType().equalsIgnoreCase(type))
                 .filter(t -> eventId == null || t.getEventId().equals(eventId))
                 .map(t -> modelMapper.map(t, TicketDto.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -53,7 +53,7 @@ public class TicketServiceImpl implements TicketService {
         return ticketRepository.findAll().stream()
                 .filter(t -> t.getEventId().equals(eventId))
                 .map(t -> modelMapper.map(t, TicketDto.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -61,7 +61,7 @@ public class TicketServiceImpl implements TicketService {
         return ticketRepository.findAll().stream()
                 .filter(t -> t.getSellerId().equals(sellerId))
                 .map(t -> modelMapper.map(t, TicketDto.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -96,5 +96,17 @@ public class TicketServiceImpl implements TicketService {
             return modelMapper.map(updated, TicketDto.class);
         }
         return null;
+    }
+
+    @Override
+    public Object countTickets() {
+        return ticketRepository.count();
+    }
+
+    @Override
+    public Long countTicketsByEvent(Integer eventId) {
+        return ticketRepository.findAll().stream()
+                .filter(t -> t.getEventId().equals(eventId))
+                .count();
     }
 }

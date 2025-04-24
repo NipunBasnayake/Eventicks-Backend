@@ -23,6 +23,9 @@ public class BidEntity {
     @Column(name = "ticket_id", nullable = false)
     private Integer ticketId;
 
+    @Column(name = "event_id", nullable = false)
+    private Integer eventId;
+
     @Column(name = "event_name", nullable = false)
     private String eventName;
 

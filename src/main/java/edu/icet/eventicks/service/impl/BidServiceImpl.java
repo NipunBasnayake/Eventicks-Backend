@@ -101,4 +101,16 @@ public class BidServiceImpl implements BidService {
         bidRepository.deleteById(bidId);
         return !bidRepository.existsById(bidId);
     }
+
+    @Override
+    public Object countBids() {
+        return bidRepository.count();
+    }
+
+    @Override
+    public Object countBidsByEvent(Integer eventId) {
+        return bidRepository.findAll().stream()
+                .filter(t -> t.getEventId().equals(eventId))
+                .count();
+    }
 }

@@ -20,4 +20,8 @@ public interface BidService {
     BidDto cancelBid(Integer bidId);
 
     Boolean rejectBid(Integer bidId);
+
+    Object countBids();
+
+    Object countBidsByEvent(Integer eventId);
 }

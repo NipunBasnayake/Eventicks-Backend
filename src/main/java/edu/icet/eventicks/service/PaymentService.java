@@ -16,4 +16,8 @@ public interface PaymentService {
     String processStripePayment(Integer ticketId, Integer buyerId, Integer quantity, String stripeToken);
 
     PaymentDto confirmStripePayment(String paymentIntentId);
+
+    Object countPayments();
+
+    Object countPaymentsByEvent(Integer eventId);
 }

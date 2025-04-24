@@ -46,8 +46,8 @@ public class QrCodeController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<ApiResponseDto<QrCodeDto>> verifyQrCode(@RequestParam String qrValue) {
-        QrCodeDto verifiedQrCode = qrCodeService.verifyQrCode(qrValue);
+    public ResponseEntity<ApiResponseDto<QrCodeDto>> verifyQrCode(@RequestParam Integer ticketId) {
+        QrCodeDto verifiedQrCode = qrCodeService.verifyQrCode(ticketId);
         if (verifiedQrCode == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponseDto.error("QR code verification failed. Invalid QR code value."));
@@ -63,15 +63,5 @@ public class QrCodeController {
                     .body(ApiResponseDto.error("QR code not found for invalidation."));
         }
         return ResponseEntity.ok(ApiResponseDto.success("QR code invalidated successfully", invalidatedQrCode));
-    }
-
-    @PutMapping("/{qrCodeId}/scan")
-    public ResponseEntity<ApiResponseDto<QrCodeDto>> scanQrCode(@PathVariable Integer qrCodeId) {
-        QrCodeDto scannedQrCode = qrCodeService.scanQrCode(qrCodeId);
-        if (scannedQrCode == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponseDto.error("QR code scanning failed. Invalid QR code ID."));
-        }
-        return ResponseEntity.ok(ApiResponseDto.success("QR code scanned successfully", scannedQrCode));
     }
 }
