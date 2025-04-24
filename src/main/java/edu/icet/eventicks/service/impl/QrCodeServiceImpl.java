@@ -1,184 +1,134 @@
 package edu.icet.eventicks.service.impl;
 
 import com.google.zxing.BarcodeFormat;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
 import edu.icet.eventicks.dto.QrCodeDto;
+import edu.icet.eventicks.dto.TicketDto;
 import edu.icet.eventicks.entity.QrCodeEntity;
-import edu.icet.eventicks.entity.TicketEntity;
 import edu.icet.eventicks.repository.QrCodeRepository;
-import edu.icet.eventicks.repository.TicketRepository;
 import edu.icet.eventicks.service.QrCodeService;
+import edu.icet.eventicks.service.TicketService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.Optional;
-import java.util.UUID;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Hashtable;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class QrCodeServiceImpl implements QrCodeService {
+
+    private final TicketService ticketService;
     private final QrCodeRepository qrCodeRepository;
-    private final TicketRepository ticketRepository;
     private final ModelMapper modelMapper;
+
+    @Value("${qr.code.image.directory}")
+    private String qrCodeImageDirectory;
 
     @Override
     public QrCodeDto generateQrCode(Integer ticketId) {
-        if (ticketId == null) {
-            throw new IllegalArgumentException("Ticket ID cannot be null");
+        TicketDto ticketById = ticketService.getTicketById(ticketId);
+
+        String qrValue = "Ticket_" + ticketId +
+                "\nEvent: " + ticketById.getEventName() +
+                "\nPrice: " + ticketById.getPrice();
+
+        try {
+            BufferedImage qrImage = generateQRCodeImage(qrValue);
+            String imageUrl = saveQrCodeImage(qrImage, ticketId);
+
+            QrCodeEntity qrCodeEntity = new QrCodeEntity();
+            qrCodeEntity.setTicketId(ticketId);
+            qrCodeEntity.setQrValue(qrValue);
+            qrCodeEntity.setEventName(ticketById.getEventName());
+            qrCodeEntity.setImageUrl(imageUrl);
+            qrCodeEntity = qrCodeRepository.save(qrCodeEntity);
+
+            return modelMapper.map(qrCodeEntity, QrCodeDto.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate QR Code", e);
+        }
+    }
+
+
+    private BufferedImage generateQRCodeImage(String qrValue) throws Exception {
+        Map<EncodeHintType, Object> hintMap = new Hashtable<>();
+        hintMap.put(EncodeHintType.MARGIN, 1);
+
+        BitMatrix bitMatrix = new MultiFormatWriter().encode(
+                qrValue,
+                BarcodeFormat.QR_CODE,
+                200, 200, hintMap
+        );
+
+        BufferedImage image = new BufferedImage(200, 200, BufferedImage.TYPE_INT_RGB);
+        image.createGraphics();
+        Graphics2D graphics = (Graphics2D) image.getGraphics();
+        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        graphics.setColor(Color.WHITE);
+        graphics.fillRect(0, 0, 200, 200);
+        graphics.setColor(Color.BLACK);
+
+        for (int i = 0; i < 200; i++) {
+            for (int j = 0; j < 200; j++) {
+                if (bitMatrix.get(i, j)) {
+                    image.setRGB(i, j, 0x000000);
+                } else {
+                    image.setRGB(i, j, 0xFFFFFF);
+                }
+            }
         }
 
-        Optional<QrCodeEntity> existingQrCode = qrCodeRepository.findByTicketTicketId(ticketId);
-        if (existingQrCode.isPresent()) {
-            return modelMapper.map(existingQrCode.get(), QrCodeDto.class);
+        return image;
+    }
+
+    private String saveQrCodeImage(BufferedImage qrImage, Integer ticketId) throws Exception {
+        Path path = Paths.get(qrCodeImageDirectory);
+        if (!Files.exists(path)) {
+            Files.createDirectories(path);
         }
 
-        TicketEntity ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new IllegalArgumentException("Ticket not found with ID: " + ticketId));
+        String imagePath = path + File.separator + "qr_code_" + ticketId + ".png";
+        File qrFile = new File(imagePath);
 
-        String qrContent = UUID.randomUUID().toString();
+        ImageIO.write(qrImage, "PNG", qrFile);
 
-        QrCodeEntity qrCodeEntity = new QrCodeEntity();
-        qrCodeEntity.setTicket(ticket);
-        qrCodeEntity.setQrValue(qrContent);
-        qrCodeEntity.setIsValid(true);
-        qrCodeEntity.setGeneratedAt(LocalDateTime.now());
-
-        if (ticket.getEvent() != null && ticket.getEvent().getEventDate() != null) {
-            qrCodeEntity.setExpiresAt(ticket.getEvent().getEventDate().plusDays(1));
-        } else {
-            qrCodeEntity.setExpiresAt(LocalDateTime.now().plusDays(30));
-        }
-
-        qrCodeEntity = qrCodeRepository.save(qrCodeEntity);
-
-        QrCodeDto qrCodeDto = modelMapper.map(qrCodeEntity, QrCodeDto.class);
-        qrCodeDto.setTicketId(ticket.getTicketId());
-
-        if (ticket.getEvent() != null) {
-            qrCodeDto.setEventName(ticket.getEvent().getName());
-        }
-
-        return qrCodeDto;
+        return imagePath;
     }
 
     @Override
     public QrCodeDto getQrCodeById(Integer qrCodeId) {
-        QrCodeEntity qrCodeEntity = qrCodeRepository.findById(qrCodeId)
-                .orElseThrow(() -> new IllegalArgumentException("QR Code not found with ID: " + qrCodeId));
-
-        QrCodeDto qrCodeDto = modelMapper.map(qrCodeEntity, QrCodeDto.class);
-        qrCodeDto.setTicketId(qrCodeEntity.getTicket().getTicketId());
-
-        if (qrCodeEntity.getTicket().getEvent() != null) {
-            qrCodeDto.setEventName(qrCodeEntity.getTicket().getEvent().getName());
-        }
-
-        return qrCodeDto;
+        return null;
     }
 
     @Override
     public QrCodeDto getQrCodeByTicket(Integer ticketId) {
-        QrCodeEntity qrCodeEntity = qrCodeRepository.findByTicketTicketId(ticketId)
-                .orElseThrow(() -> new IllegalArgumentException("QR Code not found for ticket ID: " + ticketId));
-
-        QrCodeDto qrCodeDto = modelMapper.map(qrCodeEntity, QrCodeDto.class);
-        qrCodeDto.setTicketId(qrCodeEntity.getTicket().getTicketId());
-
-        if (qrCodeEntity.getTicket().getEvent() != null) {
-            qrCodeDto.setEventName(qrCodeEntity.getTicket().getEvent().getName());
-        }
-
-        return qrCodeDto;
+        return null;
     }
 
     @Override
     public QrCodeDto verifyQrCode(String qrValue) {
-        QrCodeEntity qrCodeEntity = qrCodeRepository.findByQrValue(qrValue)
-                .orElseThrow(() -> new IllegalArgumentException("QR Code not found with value: " + qrValue));
-
-        if (!qrCodeEntity.getIsValid()) {
-            throw new IllegalStateException("QR Code is not valid");
-        }
-
-        if (qrCodeEntity.getExpiresAt() != null && qrCodeEntity.getExpiresAt().isBefore(LocalDateTime.now())) {
-            qrCodeEntity.setIsValid(false);
-            qrCodeRepository.save(qrCodeEntity);
-            throw new IllegalStateException("QR Code has expired");
-        }
-
-        QrCodeDto qrCodeDto = modelMapper.map(qrCodeEntity, QrCodeDto.class);
-        qrCodeDto.setTicketId(qrCodeEntity.getTicket().getTicketId());
-
-        if (qrCodeEntity.getTicket().getEvent() != null) {
-            qrCodeDto.setEventName(qrCodeEntity.getTicket().getEvent().getVenueName());
-        }
-
-        return qrCodeDto;
+        return null;
     }
 
     @Override
     public QrCodeDto invalidateQrCode(Integer qrCodeId) {
-        QrCodeEntity qrCodeEntity = qrCodeRepository.findById(qrCodeId)
-                .orElseThrow(() -> new IllegalArgumentException("QR Code not found with ID: " + qrCodeId));
-
-        qrCodeEntity.setIsValid(false);
-        qrCodeEntity = qrCodeRepository.save(qrCodeEntity);
-
-        QrCodeDto qrCodeDto = modelMapper.map(qrCodeEntity, QrCodeDto.class);
-        qrCodeDto.setTicketId(qrCodeEntity.getTicket().getTicketId());
-
-        if (qrCodeEntity.getTicket().getEvent() != null) {
-            qrCodeDto.setEventName(qrCodeEntity.getTicket().getEvent().getName());
-        }
-
-        return qrCodeDto;
+        return null;
     }
 
     @Override
     public QrCodeDto scanQrCode(Integer qrCodeId) {
-        QrCodeEntity qrCodeEntity = qrCodeRepository.findById(qrCodeId)
-                .orElseThrow(() -> new IllegalArgumentException("QR Code not found with ID: " + qrCodeId));
-
-        if (!qrCodeEntity.getIsValid()) {
-            throw new IllegalStateException("QR Code is not valid");
-        }
-
-        if (qrCodeEntity.getExpiresAt() != null && qrCodeEntity.getExpiresAt().isBefore(LocalDateTime.now())) {
-            qrCodeEntity.setIsValid(false);
-            qrCodeRepository.save(qrCodeEntity);
-            throw new IllegalStateException("QR Code has expired");
-        }
-
-        qrCodeEntity.setScannedAt(LocalDateTime.now());
-        qrCodeEntity = qrCodeRepository.save(qrCodeEntity);
-
-        QrCodeDto qrCodeDto = modelMapper.map(qrCodeEntity, QrCodeDto.class);
-        qrCodeDto.setTicketId(qrCodeEntity.getTicket().getTicketId());
-
-        if (qrCodeEntity.getTicket().getEvent() != null) {
-            qrCodeDto.setEventName(qrCodeEntity.getTicket().getEvent().getName());
-        }
-
-        return qrCodeDto;
-    }
-
-    private String generateQrCodeImage(String content, int width, int height) {
-        try {
-            QRCodeWriter qrCodeWriter = new QRCodeWriter();
-            BitMatrix bitMatrix = qrCodeWriter.encode(content, BarcodeFormat.QR_CODE, width, height);
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream);
-
-            return Base64.getEncoder().encodeToString(outputStream.toByteArray());
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to generate QR code", e);
-        }
+        return null;
     }
 }
