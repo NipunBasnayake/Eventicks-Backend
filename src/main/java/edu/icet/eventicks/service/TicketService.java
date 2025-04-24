@@ -20,4 +20,8 @@ public interface TicketService {
     Boolean deleteTicket(Integer ticketId);
 
     TicketDto updateTicketStatus(Integer ticketId, String status);
+
+    Object countTickets();
+
+    Object countTicketsByEvent(Integer eventId);
 }

@@ -26,6 +26,9 @@ public class TicketController {
     @GetMapping("/{ticketId}")
     public ResponseEntity<ApiResponseDto<TicketDto>> getTicketById(@PathVariable Integer ticketId) {
         TicketDto ticket = ticketService.getTicketById(ticketId);
+        if (ticket == null) {
+            return new ResponseEntity<>(ApiResponseDto.error("Ticket not found"), HttpStatus.NOT_FOUND);
+        }
         return ResponseEntity.ok(ApiResponseDto.success(ticket));
     }
 
@@ -55,12 +58,18 @@ public class TicketController {
             @PathVariable Integer ticketId,
             @RequestBody TicketDto ticketDto) {
         TicketDto updatedTicket = ticketService.updateTicket(ticketId, ticketDto);
+        if (updatedTicket == null) {
+            return new ResponseEntity<>(ApiResponseDto.error("Ticket not found or update failed"), HttpStatus.NOT_FOUND);
+        }
         return ResponseEntity.ok(ApiResponseDto.success("Ticket updated successfully", updatedTicket));
     }
 
     @DeleteMapping("/{ticketId}")
     public ResponseEntity<ApiResponseDto<Void>> deleteTicket(@PathVariable Integer ticketId) {
-        ticketService.deleteTicket(ticketId);
+        boolean deleted = ticketService.deleteTicket(ticketId);
+        if (!deleted) {
+            return new ResponseEntity<>(ApiResponseDto.error("Ticket not found or delete failed"), HttpStatus.NOT_FOUND);
+        }
         return ResponseEntity.ok(ApiResponseDto.success("Ticket deleted successfully", null));
     }
 
@@ -69,6 +78,9 @@ public class TicketController {
             @PathVariable Integer ticketId,
             @RequestParam String status) {
         TicketDto updatedTicket = ticketService.updateTicketStatus(ticketId, status);
+        if (updatedTicket == null) {
+            return new ResponseEntity<>(ApiResponseDto.error("Ticket not found or status update failed"), HttpStatus.NOT_FOUND);
+        }
         return ResponseEntity.ok(ApiResponseDto.success("Ticket status updated successfully", updatedTicket));
     }
 }

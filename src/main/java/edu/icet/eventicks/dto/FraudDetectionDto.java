@@ -14,6 +14,7 @@ public class FraudDetectionDto {
     private Integer userId;
     private String username;
     private Integer ticketId;
+    private Integer eventId;
     private String eventName;
     private String reason;
     private String status;

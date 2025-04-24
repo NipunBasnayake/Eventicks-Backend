@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table(name = "tickets")
@@ -22,55 +20,39 @@ public class TicketEntity {
     @Column(name = "ticket_id")
     private Integer ticketId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", nullable = false)
-    private EventEntity event;
+    @Column(name = "event_id")
+    private Integer eventId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seller_id", nullable = false)
-    private UserEntity seller;
+    @Column(name = "event_name")
+    private String eventName;
 
-    @Column(name = "price", precision = 10, scale = 2, nullable = false)
+    @Column(name = "seller_id")
+    private Integer sellerId;
+
+    @Column(name = "seller_username")
+    private String sellerUsername;
+
+    @Column(name = "price")
     private BigDecimal price;
 
-    @Column(name = "min_bid_price", precision = 10, scale = 2)
+    @Column(name = "min_bid_price")
     private BigDecimal minBidPrice;
 
-    @Column(name = "type", length = 50)
+    @Column(name = "type")
     private String type;
 
-    @Column(name = "status", length = 50, nullable = false)
+    @Column(name = "status")
     private String status;
+
+    @Column(name = "qr_code_id")
+    private Integer qrCodeId;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    // Relationships
-    @OneToOne(mappedBy = "ticket", cascade = CascadeType.ALL)
-    private QrCodeEntity qrCode;
+    @Column(name = "event_date")
+    private LocalDateTime eventDate;
 
-    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL)
-    private Set<PaymentEntity> payments = new HashSet<>();
-
-    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL)
-    private Set<BidEntity> bids = new HashSet<>();
-
-    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL)
-    private Set<FraudDetectionEntity> fraudDetections = new HashSet<>();
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        if (status == null) {
-            status = "AVAILABLE";
-        }
-    }
-
-    public Integer getEventId() {
-        return this.event.getEventId();
-    }
-
-    public void setEventId(EventEntity event) {
-        this.event = event;
-    }
+    @Column(name = "venue_name")
+    private String venueName;
 }

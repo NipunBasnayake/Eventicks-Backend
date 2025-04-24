@@ -19,11 +19,13 @@ public class QrCodeEntity {
     @Column(name = "qr_code_id")
     private Integer qrCodeId;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ticket_id", nullable = false)
-    private TicketEntity ticket;
+    @Column(name = "ticket_id", nullable = false)
+    private Integer ticketId;
 
-    @Column(name = "qr_value", nullable = false)
+    @Column(name = "event_name", length = 200)
+    private String eventName;
+
+    @Column(name = "qr_value", nullable = false, length = 255)
     private String qrValue;
 
     @Column(name = "is_valid")
@@ -37,6 +39,9 @@ public class QrCodeEntity {
 
     @Column(name = "generated_at")
     private LocalDateTime generatedAt;
+
+    @Column(name = "image_url")
+    private String imageUrl;
 
     @PrePersist
     protected void onCreate() {

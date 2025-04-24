@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 public class BidDto {
     private Integer bidId;
     private Integer ticketId;
+    private Integer eventId;
     private String eventName;
     private Integer userId;
     private String username;

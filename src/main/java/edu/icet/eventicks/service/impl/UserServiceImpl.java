@@ -237,4 +237,9 @@ public class UserServiceImpl implements UserService {
 
         return modelMapper.map(user, UserDto.class);
     }
+
+    @Override
+    public Object countUsers() {
+        return userRepository.count();
+    }
 }
