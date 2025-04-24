@@ -6,8 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table(name = "events")
@@ -39,9 +37,8 @@ public class EventEntity {
     @Column(name = "category", length = 100)
     private String category;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", nullable = false)
-    private UserEntity createdBy;
+    @Column(name = "created_by_id", nullable = false)
+    private Integer createdById;
 
     @Column(name = "total_tickets")
     private Integer totalTickets;
@@ -49,9 +46,8 @@ public class EventEntity {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    // Relationships
-    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
-    private Set<TicketEntity> tickets = new HashSet<>();
+    @Column(name = "available_tickets")
+    private Integer availableTickets;
 
     @PrePersist
     protected void onCreate() {
