@@ -2,27 +2,19 @@ package edu.icet.eventicks.service.impl;
 
 import edu.icet.eventicks.dto.BidDto;
 import edu.icet.eventicks.entity.BidEntity;
-import edu.icet.eventicks.entity.TicketEntity;
-import edu.icet.eventicks.entity.UserEntity;
 import edu.icet.eventicks.repository.BidRepository;
 import edu.icet.eventicks.service.BidService;
-import edu.icet.eventicks.service.TicketService;
-import edu.icet.eventicks.service.UserService;
+import edu.icet.eventicks.util.enums.BidStatus;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class BidServiceImpl implements BidService {
-
     private final BidRepository bidRepository;
-    private final UserService userService;
-    private final TicketService ticketService;
     private final ModelMapper modelMapper;
 
     @Override
@@ -30,124 +22,83 @@ public class BidServiceImpl implements BidService {
         if (bidDto == null) {
             return null;
         }
-        if (bidRepository.existsById(bidDto.getBidId())) {
-            return null;
+        if (bidDto.getBidId() == null || !bidRepository.existsById(bidDto.getBidId())) {
+            BidEntity bidEntity = modelMapper.map(bidDto, BidEntity.class);
+            bidEntity.setStatus(BidStatus.ACTIVE.name());
+            bidEntity = bidRepository.save(bidEntity);
+            return modelMapper.map(bidEntity, BidDto.class);
         }
-        BidEntity bidEntity = modelMapper.map(bidDto, BidEntity.class);
-        BidEntity savedEntity = bidRepository.save(bidEntity);
-        return modelMapper.map(savedEntity, BidDto.class);
+        return null;
     }
 
     @Override
     public BidDto getBidById(Integer bidId) {
-        if (bidId == null) {
-            return null;
-        }
-
         Optional<BidEntity> bidEntity = bidRepository.findById(bidId);
-        return bidEntity.map(entity -> modelMapper.map(entity, BidDto.class)).orElse(null);
+        return bidEntity.map(entity -> modelMapper.map(entity, BidDto.class))
+                .orElse(null);
     }
 
     @Override
     public List<BidDto> getBidsByUser(Integer userId) {
-        if (userId == null) {
-            return Collections.emptyList();
-        }
-
-        UserEntity user = modelMapper.map(userService.getUserById(userId), UserEntity.class);
-        if (user == null) {
-            return Collections.emptyList();
-        }
-
-        return bidRepository.findByUser(user).stream()
-                .map(entity -> modelMapper.map(entity, BidDto.class))
-                .collect(Collectors.toList());
+        List<BidEntity> bidEntities = bidRepository.findAll();
+        return bidEntities.stream()
+                .filter(entity -> entity.getUserId().equals(userId))
+                .map(bidEntity -> modelMapper.map(bidEntity, BidDto.class))
+                .toList();
     }
 
     @Override
     public List<BidDto> getBidsByTicket(Integer ticketId) {
-        if (ticketId == null) {
-            return Collections.emptyList();
-        }
-
-        TicketEntity ticket = modelMapper.map(ticketService.getTicketById(ticketId), TicketEntity.class);
-        if (ticket == null) {
-            return Collections.emptyList();
-        }
-
-        return bidRepository.findByTicket(ticket).stream()
-                .map(entity -> modelMapper.map(entity, BidDto.class))
-                .collect(Collectors.toList());
+        List<BidEntity> bidEntities = bidRepository.findAll();
+        return bidEntities.stream()
+                .filter(entity -> entity.getTicketId().equals(ticketId))
+                .map(bidEntity -> modelMapper.map(bidEntity, BidDto.class))
+                .toList();
     }
 
     @Override
     public BidDto getHighestBidForTicket(Integer ticketId) {
-        if (ticketId == null) {
-            return null;
-        }
+        List<BidEntity> bidEntities = bidRepository.findAll();
 
-        List<BidDto> bids = getBidsByTicket(ticketId);
-        if (bids.isEmpty()) {
-            return null;
-        }
+        Optional<BidEntity> highestBid = bidEntities.stream()
+                .filter(bid -> bid.getTicketId().equals(ticketId))
+                .max(Comparator.comparing(BidEntity::getAmount));
 
-        return bids.stream()
-                .filter(bid -> "PENDING".equals(bid.getStatus()))
-                .max(Comparator.comparing(BidDto::getAmount))
+        return highestBid.map(bidEntity -> modelMapper.map(bidEntity, BidDto.class))
                 .orElse(null);
     }
+
 
     @Override
     public BidDto acceptBid(Integer bidId) {
-        if (bidId == null) {
+        if (bidId == null || !bidRepository.existsById(bidId)) {
             return null;
         }
-
-        return bidRepository.findById(bidId)
-                .filter(bid -> !"ACCEPTED".equals(bid.getStatus()))
-                .map(bid -> {
-                    bid.setStatus("ACCEPTED");
-                    bid.setExpiresAt(LocalDateTime.now());
-                    return modelMapper.map(bidRepository.save(bid), BidDto.class);
-                })
-                .orElse(null);
-    }
-
-    @Override
-    public BidDto rejectBid(Integer bidId) {
-        if (bidId == null) {
-            return null;
-        }
-
-        Optional<BidEntity> bidOptional = bidRepository.findById(bidId);
-        if (bidOptional.isEmpty()) {
-            return null;
-        }
-
-        BidEntity bidEntity = bidOptional.get();
-        bidEntity.setStatus("REJECTED");
-        bidEntity.setExpiresAt(LocalDateTime.now());
-        BidEntity updatedEntity = bidRepository.save(bidEntity);
-
-        return modelMapper.map(updatedEntity, BidDto.class);
+        BidEntity bidEntity = bidRepository.findById(bidId).orElse(null);
+        assert bidEntity != null;
+        bidEntity.setStatus(BidStatus.ACCEPTED.name());
+        BidEntity saved = bidRepository.save(bidEntity);
+        return modelMapper.map(saved, BidDto.class);
     }
 
     @Override
     public BidDto cancelBid(Integer bidId) {
-        if (bidId == null) {
+        if (bidId == null || !bidRepository.existsById(bidId)) {
             return null;
         }
+        BidEntity bidEntity = bidRepository.findById(bidId).orElse(null);
+        assert bidEntity != null;
+        bidEntity.setStatus(BidStatus.OUTBID.name());
+        BidEntity saved = bidRepository.save(bidEntity);
+        return modelMapper.map(saved, BidDto.class);
+    }
 
-        Optional<BidEntity> bidOptional = bidRepository.findById(bidId);
-        if (bidOptional.isEmpty() || !"PENDING".equals(bidOptional.get().getStatus())) {
-            return null;
+    @Override
+    public Boolean rejectBid(Integer bidId) {
+        if (bidId == null || !bidRepository.existsById(bidId)) {
+            return false;
         }
-
-        BidEntity bidEntity = bidOptional.get();
-        bidEntity.setStatus("CANCELLED");
-        bidEntity.setExpiresAt(LocalDateTime.now());
-        BidEntity updatedEntity = bidRepository.save(bidEntity);
-
-        return modelMapper.map(updatedEntity, BidDto.class);
+        bidRepository.deleteById(bidId);
+        return !bidRepository.existsById(bidId);
     }
 }

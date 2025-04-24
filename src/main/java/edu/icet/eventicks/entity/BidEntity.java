@@ -20,13 +20,17 @@ public class BidEntity {
     @Column(name = "bid_id")
     private Integer bidId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ticket_id", nullable = false)
-    private TicketEntity ticket;
+    @Column(name = "ticket_id", nullable = false)
+    private Integer ticketId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity user;
+    @Column(name = "event_name", nullable = false)
+    private String eventName;
+
+    @Column(name = "user_id", nullable = false)
+    private Integer userId;
+
+    @Column(name = "user_name")
+    private String userName;
 
     @Column(name = "amount", precision = 10, scale = 2, nullable = false)
     private BigDecimal amount;
@@ -40,11 +44,14 @@ public class BidEntity {
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 
+    @Column(name = "is_highest_bid", nullable = false)
+    private Boolean isHighestBid;
+
     @PrePersist
     protected void onCreate() {
         placedAt = LocalDateTime.now();
         if (status == null) {
-            status = "PENDING";
+            status = "ACTIVE";
         }
     }
 }

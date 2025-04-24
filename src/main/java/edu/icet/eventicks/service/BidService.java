@@ -17,7 +17,7 @@ public interface BidService {
 
     BidDto acceptBid(Integer bidId);
 
-    BidDto rejectBid(Integer bidId);
-
     BidDto cancelBid(Integer bidId);
+
+    Boolean rejectBid(Integer bidId);
 }
