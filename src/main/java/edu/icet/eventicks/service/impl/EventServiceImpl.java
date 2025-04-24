@@ -1,7 +1,9 @@
 package edu.icet.eventicks.service.impl;
 
 import edu.icet.eventicks.dto.EventDto;
+import edu.icet.eventicks.dto.UserDto;
 import edu.icet.eventicks.entity.EventEntity;
+import edu.icet.eventicks.entity.TicketEntity;
 import edu.icet.eventicks.entity.UserEntity;
 import edu.icet.eventicks.repository.EventRepository;
 import edu.icet.eventicks.service.EventService;
@@ -23,19 +25,57 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventDto createEvent(EventDto eventDto) {
-        if (eventDto == null || eventRepository.existsById(eventDto.getEventId())) {
+        if (eventDto.getEventId() != null) {
             return null;
         }
-        return modelMapper.map(eventRepository.save(modelMapper.map(eventDto, EventEntity.class)), EventDto.class);
+
+        UserDto userDto = userService.getUserById(eventDto.getCreatedById());
+        if (userDto == null) {
+            return null;
+        }
+
+        EventEntity eventEntity = modelMapper.map(eventDto, EventEntity.class);
+        UserEntity userEntity = modelMapper.map(userDto, UserEntity.class);
+        eventEntity.setCreatedBy(userEntity);
+
+        eventEntity.setCreatedAt(LocalDateTime.now());
+
+        EventEntity savedEntity = eventRepository.save(eventEntity);
+        EventDto resultDto = modelMapper.map(savedEntity, EventDto.class);
+
+        resultDto.setCreatedById(userDto.getUserId());
+        resultDto.setCreatedByUsername(userDto.getName());
+
+        if (savedEntity.getTotalTickets() != null) {
+            resultDto.setAvailableTickets(savedEntity.getTotalTickets());
+        }
+
+        return resultDto;
     }
 
     @Override
     public EventDto getEventById(Integer eventId) {
-        if (eventId == null || !eventRepository.existsById(eventId)) {
+        if (eventId == null) {
             return null;
         }
-        Optional<EventEntity> eventEntity = eventRepository.findById(eventId);
-        return eventEntity.map(entity -> modelMapper.map(entity, EventDto.class)).orElse(null);
+
+        return eventRepository.findById(eventId)
+                .map(entity -> {
+                    EventDto dto = modelMapper.map(entity, EventDto.class);
+
+                    if (entity.getCreatedBy() != null) {
+                        dto.setCreatedById(entity.getCreatedBy().getUserId());
+                        dto.setCreatedByUsername(entity.getCreatedBy().getName());
+                    }
+
+                    if (entity.getTotalTickets() != null) {
+                        int ticketsSold = entity.getTickets() != null ? entity.getTickets().size() : 0;
+                        dto.setAvailableTickets(entity.getTotalTickets() - ticketsSold);
+                    }
+
+                    return dto;
+                })
+                .orElse(null);
     }
 
     @Override
@@ -62,7 +102,6 @@ public class EventServiceImpl implements EventService {
                 filteredEvents.add(modelMapper.map(entity, EventDto.class));
             }
         }
-
         return filteredEvents;
     }
 
@@ -71,29 +110,73 @@ public class EventServiceImpl implements EventService {
         LocalDateTime now = LocalDateTime.now();
 
         return eventRepository.findAll().stream()
-                .filter(event -> event.getEventDate().isAfter(now))
+                .filter(event -> event.getEventDate() != null && event.getEventDate().isAfter(now))
                 .sorted(Comparator.comparing(EventEntity::getEventDate))
-                .map(entity -> modelMapper.map(entity, EventDto.class))
+                .map(entity -> {
+                    EventDto dto = modelMapper.map(entity, EventDto.class);
+
+                    if (entity.getCreatedBy() != null) {
+                        dto.setCreatedById(entity.getCreatedBy().getUserId());
+                        dto.setCreatedByUsername(entity.getCreatedBy().getName());
+                    }
+
+                    if (entity.getTotalTickets() != null) {
+                        int ticketsSold = entity.getTickets() != null ? entity.getTickets().size() : 0;
+                        dto.setAvailableTickets(entity.getTotalTickets() - ticketsSold);
+                    }
+
+                    return dto;
+                })
                 .toList();
     }
 
     @Override
     public EventDto updateEvent(Integer eventId, EventDto eventDto) {
-        if (eventId == null || eventDto == null || !eventRepository.existsById(eventId) || !eventId.equals(eventDto.getEventId())) {
+        if (eventId == null || eventDto == null || !Objects.equals(eventId, eventDto.getEventId())) {
             return null;
         }
 
-        EventEntity eventEntity = modelMapper.map(eventDto, EventEntity.class);
-        EventEntity updatedEntity = eventRepository.save(eventEntity);
+        return eventRepository.findById(eventId)
+                .map(existingEntity -> {
+                    UserEntity createdBy = existingEntity.getCreatedBy();
+                    LocalDateTime createdAt = existingEntity.getCreatedAt();
+                    Set<TicketEntity> tickets = existingEntity.getTickets();
 
-        return modelMapper.map(updatedEntity, EventDto.class);
+                    modelMapper.map(eventDto, existingEntity);
+
+                    existingEntity.setCreatedBy(createdBy);
+                    existingEntity.setCreatedAt(createdAt);
+                    existingEntity.setTickets(tickets);
+
+                    EventEntity updatedEntity = eventRepository.save(existingEntity);
+
+                    EventDto resultDto = modelMapper.map(updatedEntity, EventDto.class);
+
+                    if (createdBy != null) {
+                        resultDto.setCreatedById(createdBy.getUserId());
+                        resultDto.setCreatedByUsername(createdBy.getName());
+                    }
+
+                    if (updatedEntity.getTotalTickets() != null) {
+                        int ticketsSold = tickets != null ? tickets.size() : 0;
+                        resultDto.setAvailableTickets(updatedEntity.getTotalTickets() - ticketsSold);
+                    }
+
+                    return resultDto;
+                })
+                .orElse(null);
     }
 
     @Override
     public Boolean deleteEvent(Integer eventId) {
-        if (eventId == null || !eventRepository.existsById(eventId)) {
+        if (eventId == null) {
             return false;
         }
+
+        if (!eventRepository.existsById(eventId)) {
+            return false;
+        }
+
         eventRepository.deleteById(eventId);
         return !eventRepository.existsById(eventId);
     }
@@ -104,13 +187,22 @@ public class EventServiceImpl implements EventService {
             return Collections.emptyList();
         }
 
-        UserEntity creator = modelMapper.map(userService.getUserById(userId), UserEntity.class);
-        if (creator == null) {
+        UserDto userDto = userService.getUserById(userId);
+        if (userDto == null) {
             return Collections.emptyList();
         }
 
-        return eventRepository.findByCreatedBy(creator).stream()
-                .map(entity -> modelMapper.map(entity, EventDto.class))
+        UserEntity userEntity = modelMapper.map(userDto, UserEntity.class);
+
+        return eventRepository.findByCreatedBy(userEntity).stream()
+                .map(entity -> {
+                    EventDto dto = modelMapper.map(entity, EventDto.class);
+
+                    dto.setCreatedById(userId);
+                    dto.setCreatedByUsername(userDto.getName());
+
+                    return dto;
+                })
                 .toList();
     }
 
@@ -118,6 +210,7 @@ public class EventServiceImpl implements EventService {
     public List<String> getAllCategories() {
         return eventRepository.findAll().stream()
                 .map(EventEntity::getCategory)
+                .filter(Objects::nonNull)
                 .distinct()
                 .toList();
     }
@@ -126,6 +219,7 @@ public class EventServiceImpl implements EventService {
     public List<String> getAllLocations() {
         return eventRepository.findAll().stream()
                 .map(EventEntity::getVenueLocation)
+                .filter(Objects::nonNull)
                 .distinct()
                 .toList();
     }

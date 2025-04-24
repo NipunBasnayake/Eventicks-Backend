@@ -104,26 +104,8 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("User data cannot be null");
         }
 
-        Optional<UserEntity> existingUserOpt = userRepository.findById(userId);
-        if (existingUserOpt.isEmpty()) {
-            throw new IllegalArgumentException(USER_NOT_FOUND_MESSAGE + userId);
-        }
-
-        if (userDto.getUserId() != null && !userDto.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("Path variable ID doesn't match request body ID");
-        }
-
-        UserEntity byEmail = userRepository.findByEmail(userDto.getEmail());
-        if (byEmail != null && !byEmail.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("Email already in use by another user");
-        }
-
-        UserEntity existingUser = existingUserOpt.get();
-        existingUser.setName(userDto.getName());
-        existingUser.setEmail(userDto.getEmail());
-
-        UserEntity savedEntity = userRepository.save(existingUser);
-        return modelMapper.map(savedEntity, UserDto.class);
+        UserEntity userEntity = userRepository.save(modelMapper.map(userDto, UserEntity.class));
+        return modelMapper.map(userEntity, UserDto.class);
     }
 
     @Override
