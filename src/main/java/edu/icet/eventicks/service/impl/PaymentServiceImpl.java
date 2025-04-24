@@ -2,71 +2,74 @@ package edu.icet.eventicks.service.impl;
 
 import edu.icet.eventicks.dto.PaymentDto;
 import edu.icet.eventicks.entity.PaymentEntity;
-import edu.icet.eventicks.entity.TicketEntity;
-import edu.icet.eventicks.entity.UserEntity;
 import edu.icet.eventicks.repository.PaymentRepository;
 import edu.icet.eventicks.service.PaymentService;
-import edu.icet.eventicks.service.TicketService;
-import edu.icet.eventicks.service.UserService;
-import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
-    private final UserService userService;
-    private final TicketService ticketService;
     private final ModelMapper modelMapper;
 
     @Override
     public PaymentDto createPayment(PaymentDto paymentDto) {
-        if (paymentRepository.existsById(paymentDto.getPaymentId()) && paymentDto.getPaymentId() != null) {
+        if (paymentDto == null) {
             return null;
         }
-        return modelMapper.map(paymentRepository.save(modelMapper.map(paymentDto, PaymentEntity.class)), PaymentDto.class);
-    }
-
-    @Override
-    public PaymentDto getPaymentById(Integer paymentId) {
-        if (paymentRepository.existsById(paymentId)) {
-            return modelMapper.map(paymentRepository.findById(paymentId), PaymentDto.class);
+        if (paymentDto.getPaymentId() == null || !paymentRepository.existsById(paymentDto.getPaymentId())) {
+            PaymentEntity saved = paymentRepository.save(modelMapper.map(paymentDto, PaymentEntity.class));
+            return modelMapper.map(saved, PaymentDto.class);
         }
         return null;
     }
 
     @Override
+    public PaymentDto getPaymentById(Integer paymentId) {
+        return paymentRepository.findById(paymentId)
+                .map(paymentEntity -> modelMapper.map(paymentEntity, PaymentDto.class))
+                .orElse(null);  // Return null if no payment found with the given ID
+    }
+
+    @Override
     public List<PaymentDto> getPaymentsByBuyer(Integer buyerId) {
-        if (buyerId == null) {
-            return Collections.emptyList();
-        }
-        return paymentRepository.findByBuyer(modelMapper.map(userService.getUserById(buyerId), UserEntity.class)).stream()
-                .map(payment -> modelMapper.map(payment, PaymentDto.class))
-                .collect(Collectors.toList());
+        List<PaymentEntity> payments = paymentRepository.findAll();
+        return payments.stream()
+                .filter(entity -> entity.getBuyerId().equals(buyerId))
+                .map(paymentEntity -> modelMapper.map(paymentEntity, PaymentDto.class))
+                .toList();
     }
 
     @Override
     public List<PaymentDto> getPaymentsByTicket(Integer ticketId) {
-        if (ticketId == null) {
-            return Collections.emptyList();
-        }
-        return paymentRepository.findByTicket(modelMapper.map(ticketService.getTicketById(ticketId), TicketEntity.class)).stream()
-                .map(paymentDto -> modelMapper.map(paymentDto, PaymentDto.class))
+        List<PaymentEntity> payments = paymentRepository.findAll();
+        return payments.stream()
+                .filter(entity -> entity.getTicketId().equals(ticketId))
+                .map(paymentEntity -> modelMapper.map(paymentEntity, PaymentDto.class))
                 .toList();
     }
 
     @Override
     public String processStripePayment(Integer ticketId, Integer buyerId, Integer quantity, String stripeToken) {
-        return "";
+        return "mock-payment-intent-id";
     }
 
     @Override
     public PaymentDto confirmStripePayment(String paymentIntentId) {
-        return null;
+        PaymentDto paymentDto = new PaymentDto();
+        paymentDto.setPaymentId(1);
+        paymentDto.setBuyerId(1);
+        paymentDto.setTicketId(1);
+        paymentDto.setQuantity(2);
+        paymentDto.setTotalAmount(BigDecimal.valueOf(200.00));
+        paymentDto.setMethod("Stripe");
+        paymentDto.setPaidAt(java.time.LocalDateTime.now());
+
+        return paymentDto;
     }
 }
