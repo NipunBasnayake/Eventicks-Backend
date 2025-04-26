@@ -28,6 +28,9 @@ public class EventEntity {
     @Column(name = "event_date", nullable = false)
     private LocalDateTime eventDate;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @Column(name = "venue_name", length = 200)
     private String venueName;
 
@@ -48,6 +51,9 @@ public class EventEntity {
 
     @Column(name = "available_tickets")
     private Integer availableTickets;
+
+    @Column(name = "ticket_price")
+    private Double ticketPrice;
 
     @PrePersist
     protected void onCreate() {

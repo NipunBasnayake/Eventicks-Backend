@@ -29,6 +29,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponseDto<UserDto>> loginUser(@RequestBody LoginRequestDto loginRequestDto) {
+        System.out.println(loginRequestDto.toString());
         UserDto authenticatedUser = userService.login(loginRequestDto);
         if (authenticatedUser != null) {
             String token = jwtUtil.generateToken(authenticatedUser.getEmail());
