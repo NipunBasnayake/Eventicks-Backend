@@ -14,6 +14,7 @@ public class EventDto {
     private String name;
     private String description;
     private LocalDateTime eventDate;
+    private String imageUrl;
     private String venueName;
     private String venueLocation;
     private String category;
@@ -21,4 +22,5 @@ public class EventDto {
     private Integer totalTickets;
     private LocalDateTime createdAt;
     private Integer availableTickets;
+    private Double ticketPrice;
 }
