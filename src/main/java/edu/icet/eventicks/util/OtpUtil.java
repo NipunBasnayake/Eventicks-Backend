@@ -5,7 +5,6 @@ import java.util.Random;
 
 @Component
 public class OtpUtil {
-
     public String generateOtp() {
         Random random = new Random();
         int otpNumber = 100000 + random.nextInt(900000);
