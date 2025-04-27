@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -25,6 +26,19 @@ public class EventController {
                     .body(ApiResponseDto.error("Failed to create event"));
         }
         return new ResponseEntity<>(ApiResponseDto.success("Event created successfully", createdEvent), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/all")
+    public ResponseEntity<ApiResponseDto<List<EventDto>>> getAllEvents(@RequestBody List<EventDto> eventList) {
+        List<EventDto> savedEvents = new ArrayList<>();
+
+        eventList.forEach(eventDto -> {
+            EventDto event = eventService.createEvent(eventDto);
+            savedEvents.add(event);
+        });
+
+        ApiResponseDto<List<EventDto>> response = new ApiResponseDto<>(true, "Events created successfully", savedEvents);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{eventId}")

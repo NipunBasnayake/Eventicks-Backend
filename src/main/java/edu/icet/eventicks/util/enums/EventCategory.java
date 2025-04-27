@@ -1,13 +1,12 @@
 package edu.icet.eventicks.util.enums;
 
 public enum EventCategory {
-    MUSIC_CONCERTS("Live Concerts, DJ Nights, Classical Music, Open Mic, Tribute Shows"),
-    FESTIVALS_CULTURAL("Traditional Festivals, Food Festivals, Art Exhibitions, Fashion Shows"),
-    THEATER_PERFORMING_ARTS("Drama, Stand-up Comedy, Dance Performances, Circus, Magic Shows"),
-    SPORTS_ADVENTURE("Cricket, Football, Marathon, Motor Racing, Water Sports, Extreme Sports"),
-    WORKSHOPS_CONFERENCES("Business, Tech, Photography, Music, Dance Workshops"),
-    NIGHTLIFE_SOCIAL("Clubbing, Social Mixers, Wine Tasting"),
-    CHARITY_COMMUNITY("Fundraising, Blood Donation, Environmental Events");
+    LIVE_CONCERTS("Live music performances by bands or solo artists"),
+    DJ_NIGHTS("Electronic dance music events with DJs"),
+    CLASSICAL_MUSIC("Orchestral, instrumental, and traditional classical performances"),
+    OPEN_MIC("Open stage performances for musicians and singers"),
+    TRIBUTE_SHOWS("Concerts honoring famous artists or bands"),
+    MUSIC_FESTIVALS("Large multi-artist, multi-day live music festivals");
 
     private final String description;
 
